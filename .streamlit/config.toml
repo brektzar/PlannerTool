@@ -1,0 +1,7 @@
+[theme]
+base="dark"
+primaryColor="#1F77B4"  # Nice blue color
+backgroundColor="#1c1f26"  # Dark background
+secondaryBackgroundColor="#2a2e38"  # Slightly lighter background for sidebars
+textColor="#FAFAFA"  # Light text color
+font="sans serif"
