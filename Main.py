@@ -14,8 +14,8 @@ def clear_csv():
         st.success("Filen har rensats.")
     except FileNotFoundError:
         st.info("Filen fanns inte från början.")
-    except Exception as e:
-        st.error(f"Ett fel uppstod vid rensning: {e}")
+    except Exception as ce:
+        st.error(f"Ett fel uppstod vid rensning: {ce}")
 
 
 tab_names = ["Målbeskrivning", "Planering", "Rapport"]
@@ -45,8 +45,8 @@ with tabs[0]:
                 save_to_csv(data)
                 st.success("Målet har lagts till!")
                 st.rerun()
-            except Exception as e:
-                st.error(f"Ett fel uppstod: {e}")
+            except Exception as ge:
+                st.error(f"Ett fel uppstod: {ge}")
 
     # Läs in data från CSV-filen och visa den i en tabell
     try:
@@ -61,8 +61,8 @@ with tabs[0]:
     except pd.errors.EmptyDataError:
         st.info("Filen 'Planering.csv' är tom. Lägg till ett nytt mål.")
 
-    except Exception as e:
-        st.error(f"Ett oväntat fel uppstod: {e}")
+    except Exception as re:
+        st.error(f"Ett oväntat fel uppstod: {re}")
 
     # Knapp för att rensa filen
     if st.button("Rensa fil"):
@@ -140,8 +140,8 @@ with tabs[1]:
         except pd.errors.EmptyDataError:
             st.info("Filen 'Planering.csv' är tom. Lägg till ett nytt mål.")
 
-        except Exception as e:
-            st.error(f"Ett oväntat fel uppstod: {e}")
+        except Exception as re:
+            st.error(f"Ett oväntat fel uppstod: {re}")
 
     with col2:
         st.write("Mål och Uppgifter")
@@ -163,8 +163,8 @@ with tabs[1]:
 
         except FileNotFoundError:
             st.info("Fil med uppgifter hittades inte.")
-        except Exception as e:
-            st.error(f"Ett fel uppstod: {e}")
+        except Exception as we:
+            st.error(f"Ett fel uppstod: {we}")
 
 
 with tabs[2]:
