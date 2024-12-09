@@ -2,9 +2,7 @@ import streamlit as st
 import pandas as pd
 
 
-
 def adjust_tools():
-    st.header("Lista på redskap och verktyg")
     st.write("Justera listan utefter hur behoven ser ut.")
     st.divider()
 

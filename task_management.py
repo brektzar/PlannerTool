@@ -41,7 +41,7 @@ def update_data(df, index, column, new_value):
 
 
 def task_management():
-    st.header("Planera uppgifter för ett givet mål")
+
     col1, col2 = st.columns([2, 1])
 
     with col1:
@@ -73,7 +73,7 @@ def task_management():
 
                     with st.expander("Hyra?"):
                         rental = st.text_input("Vad ska hyras?")
-                        rental_type = st.selectbox("Hyrestyp", ["Dygn", "Timme"])
+                        rental_type = st.selectbox("Hyrestyp", ["Dygn", "Timmar"])
                         rental_amount = st.number_input("Antal dygn/timmar", min_value=0.0)
                         rental_cost = st.number_input("Hyrkostnad per timme/dygn", min_value=0.0)
                         total_rental_cost = rental_amount * rental_cost
