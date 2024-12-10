@@ -60,11 +60,7 @@ with tabs[1]:
     st.header("Planera uppgifter för ett givet mål")
     tm.task_management()
 
-with (tabs[3]):
-    st.header("Lista på redskap och verktyg")
-    at.adjust_tools()
-
-with (tabs[4]):
+with (tabs[2]):
     st.title("Statistik och Rapporter")
 
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
@@ -102,6 +98,10 @@ with (tabs[4]):
 
     with tab6:
         rp.rental_costs()
+
+with (tabs[3]):
+    st.header("Lista på redskap och verktyg")
+    at.adjust_tools()
 
 
 st.divider()
