@@ -64,43 +64,44 @@ with (tabs[3]):
     st.header("Lista på redskap och verktyg")
     at.adjust_tools()
 
-st.title("Statistik och Rapporter")
+with (tabs[4]):
+    st.title("Statistik och Rapporter")
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "Projektöversikt",
-    "Tidsstatistik",
-    "Kostnadsanalys",
-    "Resursanvändning",
-    "Verktygsstatistik",
-    "Hyreskostnader"
-])
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        "Projektöversikt",
+        "Tidsstatistik",
+        "Kostnadsanalys",
+        "Resursanvändning",
+        "Verktygsstatistik",
+        "Hyreskostnader"
+    ])
 
-with tab1:
-    rp.project_overview()
+    with tab1:
+        rp.project_overview()
 
-with tab2:
-    rp.time_statistics()
+    with tab2:
+        rp.time_statistics()
 
-with tab3:
-    rp.cost_analysis()
+    with tab3:
+        rp.cost_analysis()
 
-with tab4:
-    schema_inner_tabs = st.tabs(["Mål", "Uppgifter"])
-    with schema_inner_tabs[0]:
-        st.header("Målschema")
-        rp.goals_schema()
-    with schema_inner_tabs[1]:
-        st.header("Uppgiftschema")
-        rp.tasks_schema()
-    rp.resource_utilization()
+    with tab4:
+        schema_inner_tabs = st.tabs(["Mål", "Uppgifter"])
+        with schema_inner_tabs[0]:
+            st.header("Målschema")
+            rp.goals_schema()
+        with schema_inner_tabs[1]:
+            st.header("Uppgiftschema")
+            rp.tasks_schema()
+        rp.resource_utilization()
 
-with tab5:
-    rp.tools_report()
-    rp.tools_per_categories_report()
-    rp.tools_categories_used_report()
+    with tab5:
+        rp.tools_report()
+        rp.tools_per_categories_report()
+        rp.tools_categories_used_report()
 
-with tab6:
-    rp.rental_costs()
+    with tab6:
+        rp.rental_costs()
 
 
 st.divider()
