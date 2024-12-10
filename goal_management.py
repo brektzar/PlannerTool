@@ -60,7 +60,16 @@ def goal_management():
     except Exception as re:
         st.error(f"Ett oväntat fel uppstod: {re}")
 
+    st.divider()
+    st.divider()
     # Knapp för att rensa filen
-    if st.button("Rensa fil"):
-        clear_csv()
-        st.rerun()
+    st.error("VARNING! Rensar filen 'Planering.csv' på all data!")
+    st.error("Gör endast om du är säker på att du vill rensa filen!")
+
+    col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns(9)
+    with col5:
+        if st.button("||->Rensa fil<-||", type="primary"):
+            clear_csv()
+            st.rerun()
+
+    st.divider()
