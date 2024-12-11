@@ -267,7 +267,7 @@ def cost_analysis():
     
     col1, col2 = st.columns(2)
     with col1:
-        st.metric("Total projektkostnad", f"{total_project_cost:,.0f} kr")
+        st.metric("Kostnad sammanlagt alla mål", f"{total_project_cost:,.0f} kr")
         st.metric("Material/Arbetskostnad", f"{total_cost:,.0f} kr")
         st.metric("Total hyreskostnad", f"{total_rental:,.0f} kr")
     
