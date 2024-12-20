@@ -127,15 +127,20 @@ def display_risk_matrix():
         title="Riskbedömningsmatris",
         xaxis_title="Sannolikhet",
         yaxis_title="Konsekvens",
-        height=400  # Add fixed height for better display
+        height=400,
+        width=300,
     )
 
     # Display the plot
-    st.plotly_chart(figure_risk, use_container_width=True)
+    st.plotly_chart(figure_risk, use_container_width=False)
 
 
 def display_severity_descriptions():
     st.subheader("Allvarlighetsgrad")
+    st.write("")
+    st.write("")
+    st.write("")
+    st.write("")
 
     # Create a more visual representation with colored backgrounds
     st.markdown("""
@@ -146,6 +151,7 @@ def display_severity_descriptions():
         margin: 2px;
         color: black;
     }
+
     .risk-low { background-color: #00FF00; }
     .risk-medium { background-color: #FFFF00; }
     .risk-high-medium { background-color: #FFA500; color: white; }
@@ -155,8 +161,11 @@ def display_severity_descriptions():
 
     descriptions = [
         ("Låg", "risk-low", "Kräver ingen åtgärd för tillfället"),
+        ("", "", ""),
         ("Medel", "risk-medium", "Åtgärdas inom en rimlig tidsram"),
+        ("", "", ""),
         ("Medelhög", "risk-high-medium", "Åtgärdas snarast"),
+        ("", "", ""),
         ("Hög", "risk-high", "Kräver omedelbar åtgärd")
     ]
 
@@ -340,7 +349,7 @@ def risk_assessment_app(df):
         selected_task = st.selectbox("Välj Uppgift", options=tasks)
 
         # Create columns for the form
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns([5, 3, 2])
 
         with col1:
             # Risk input fields
@@ -350,8 +359,11 @@ def risk_assessment_app(df):
             responsible = st.text_input("Ansvarig")
 
         with col2:
+
             # Risk matrix and descriptions
             display_risk_matrix()
+
+        with col3:
             display_severity_descriptions()
 
         # Bottom section for additional inputs

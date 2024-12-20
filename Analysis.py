@@ -1,6 +1,7 @@
 import plotly.express as px
 import plotly.graph_objects as plotly_graph_objects
 import pandas as pd
+import plotly.graph_objects as go
 # from plotly.subplots import make_subplots
 # import numpy as ny
 # import streamlit as st
@@ -84,51 +85,73 @@ def create_cost_analysis(dataframe):
 
 
 def create_gantt_charts(dataframe):
-    goals = dataframe[dataframe["Type"] == "Goal"]
-    tasks = dataframe[dataframe["Type"] == "Task"]
+    """Create Gantt charts for goals and tasks"""
     gantt_figures = {"overview": None, "tasks": {}}
-
-    if goals.empty:
-        return {"overview": None, "tasks": {}}
-
-    # Create goals overview Gantt chart first
-    goals_data = goals[["Goal_Name", "Goal_Start_Date", "Goal_End_Date"]]
-    goals_data.columns = ["Goal", "Start", "Finish"]
-
-    overview_fig = px.timeline(
-        goals_data,
-        x_start="Start",
-        x_end="Finish",
-        y="Goal",
-        title="Översikt av Projektmål"
-    )
-
-    # Store the overview chart
-    gantt_figures["overview"] = overview_fig
-
-    for _, goal in goals.iterrows():
-        goal_name = goal['Goal_Name']
-        goal_tasks = tasks[tasks['Goal_Name'] == goal_name]
-
-        if goal_tasks.empty:
-            continue
-
-        # Create timeline data for this goal's tasks
-        gantt_data = goal_tasks[["Task_Name", "Task_Start_Date", "Task_End_Date"]]
-        gantt_data.columns = ["Task", "Start", "Finish"]
-
-        # Create Gantt chart for this goal
-        fig = px.timeline(
-            gantt_data,
-            x_start="Start",
-            x_end="Finish",
-            y="Task",
-            title=f"Tidslinje för Uppgifter - {goal_name}"
-        )
-
-        gantt_figures["tasks"][goal_name] = fig
-
-    return gantt_figures
+    
+    try:
+        if dataframe.empty:
+            return gantt_figures
+            
+        goals = dataframe[dataframe["Type"] == "Goal"]
+        tasks = dataframe[dataframe["Type"] == "Task"]
+        
+        if goals.empty:
+            return gantt_figures
+            
+        # Create goals overview Gantt chart
+        try:
+            goals_data = goals[["Goal_Name", "Goal_Start_Date", "Goal_End_Date", "Goal_Completed"]]
+            goals_data.columns = ["Goal", "Start", "Finish", "Completed"]
+            goals_data['Completed'] = goals_data['Completed'].fillna(False)
+            
+            overview_fig = px.timeline(
+                goals_data,
+                x_start="Start",
+                x_end="Finish",
+                y="Goal",
+                title="Översikt av Projektmål",
+                color="Completed",
+                color_discrete_map={True: "#2ecc71", False: "#e74c3c"}
+            )
+            
+            gantt_figures["overview"] = overview_fig
+        except Exception as e:
+            print(f"Error creating overview Gantt chart: {str(e)}")
+            return gantt_figures
+        
+        # Create individual task timelines for each goal
+        for _, goal in goals.iterrows():
+            try:
+                goal_name = goal['Goal_Name']
+                goal_tasks = tasks[tasks['Goal_Name'] == goal_name]
+                
+                if goal_tasks.empty:
+                    continue
+                    
+                gantt_data = goal_tasks[["Task_Name", "Task_Start_Date", "Task_End_Date", "Task_Completed"]]
+                gantt_data.columns = ["Task", "Start", "Finish", "Completed"]
+                gantt_data['Completed'] = gantt_data['Completed'].fillna(False)
+                
+                fig = px.timeline(
+                    gantt_data,
+                    x_start="Start",
+                    x_end="Finish",
+                    y="Task",
+                    title=f"Tidslinje för Uppgifter - {goal_name}",
+                    color="Completed",
+                    color_discrete_map={True: "#2ecc71", False: "#e74c3c"}
+                )
+                
+                gantt_figures["tasks"][goal_name] = fig
+            except Exception as e:
+                print(f"Error creating Gantt chart for goal {goal_name}: {str(e)}")
+                continue
+        
+        return gantt_figures
+        
+    except Exception as e:
+        print(f"Error in create_gantt_charts: {str(e)}")
+        return gantt_figures
 
 
 def analyze_work_hours(dataframe):
@@ -270,6 +293,107 @@ def create_risk_matrix():
         title="Riskbedömningsmatris",
         xaxis_title="Sannolikhet",
         yaxis_title="Konsekvens",
+        height=500,
+        width=350,
     )
 
     return figure_risk
+
+
+def create_completion_analysis(dataframe):
+    """Create visualizations for goal and task completion status"""
+    completion_figures = []
+    
+    try:
+        # Goal completion stats
+        goals = dataframe[dataframe['Type'] == 'Goal']
+        if goals.empty:
+            return [go.Figure().update_layout(
+                title="No Goals Available",
+                annotations=[{"text": "Add some goals to see completion statistics", 
+                            "x": 0.5, "y": 0.5, "showarrow": False}]
+            )]
+        
+        goal_completion = goals['Goal_Completed'].fillna(False).value_counts()
+        
+        fig_goals = go.Figure(data=[
+            go.Pie(
+                labels=['Completed', 'In Progress'],
+                values=[
+                    goal_completion.get(True, 0),
+                    goal_completion.get(False, 0)
+                ],
+                hole=.3,
+                marker_colors=['#2ecc71', '#e74c3c']
+            )
+        ])
+        fig_goals.update_layout(
+            title="Målstatus",
+            annotations=[{
+                'text': f"{(goal_completion.get(True, 0) / len(goals) * 100):.1f}%<br>Slutförda",
+                'x': 0.5, 'y': 0.5,
+                'font_size': 20,
+                'showarrow': False
+            }]
+        )
+        completion_figures.append(fig_goals)
+        
+        # Task completion stats
+        tasks = dataframe[dataframe['Type'] == 'Task']
+        if not tasks.empty:
+            task_completion = tasks['Task_Completed'].fillna(False).value_counts()
+            
+            fig_tasks = go.Figure(data=[
+                go.Pie(
+                    labels=['Completed', 'In Progress'],
+                    values=[
+                        task_completion.get(True, 0),
+                        task_completion.get(False, 0)
+                    ],
+                    hole=.3,
+                    marker_colors=['#2ecc71', '#e74c3c']
+                )
+            ])
+            fig_tasks.update_layout(
+                title="Uppgiftsstatus",
+                annotations=[{
+                    'text': f"{(task_completion.get(True, 0) / len(tasks) * 100):.1f}%<br>Slutförda",
+                    'x': 0.5, 'y': 0.5,
+                    'font_size': 20,
+                    'showarrow': False
+                }]
+            )
+            completion_figures.append(fig_tasks)
+            
+            # Task completion by goal
+            try:
+                task_by_goal = pd.DataFrame({
+                    'Goal': tasks['Goal_Name'],
+                    'Status': tasks['Task_Completed'].fillna(False).map({True: 'Slutförda', False: 'Pågående'})
+                }).groupby(['Goal', 'Status']).size().unstack(fill_value=0)
+                
+                fig_by_goal = go.Figure(data=[
+                    go.Bar(name='Slutförda', y=task_by_goal.index, x=task_by_goal['Slutförda'], 
+                          orientation='h', marker_color='#2ecc71'),
+                    go.Bar(name='Pågående', y=task_by_goal.index, x=task_by_goal['Pågående'], 
+                          orientation='h', marker_color='#e74c3c')
+                ])
+                fig_by_goal.update_layout(
+                    title="Uppgiftsstatus per Mål",
+                    barmode='stack',
+                    yaxis_title="Mål",
+                    xaxis_title="Antal Uppgifter"
+                )
+                completion_figures.append(fig_by_goal)
+            except KeyError as e:
+                print(f"Error creating task by goal chart: {str(e)}")
+        
+        return completion_figures
+    
+    except Exception as e:
+        print(f"Error in create_completion_analysis: {str(e)}")
+        return [go.Figure().update_layout(
+            title="Error Creating Completion Analysis",
+            annotations=[{"text": f"An error occurred: {str(e)}", 
+                        "x": 0.5, "y": 0.5, "showarrow": False}]
+        )]

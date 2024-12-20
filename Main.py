@@ -3,7 +3,7 @@ from Data import (load_data, save_data, get_technical_needs_list,
                   load_technical_needs, save_technical_needs, WEATHER_CONDITIONS)
 from History import save_year_to_history, show_historical_analysis, load_historical_data
 from Analysis import (create_cost_analysis, create_gantt_charts,
-                      analyze_work_hours, create_technical_needs_analysis)
+                      analyze_work_hours, create_technical_needs_analysis, create_completion_analysis)
 from Planning import add_goal, add_task, update_dataframe, toggle_task_completion, toggle_goal_completion
 import datetime
 import sys
@@ -13,6 +13,113 @@ from Risk_Assessment import risk_assessment_app, display_risk_overview
 
 # Set page config
 st.set_page_config(layout="wide", page_title="Planeringsverktyg")
+
+# Add custom styling
+st.markdown("""
+<style>
+    /* Modern cards for expanders */
+    div.stExpander {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+    div.stExpander:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    /* Animated progress bars */
+    .stProgress > div > div > div > div {
+        background: linear-gradient(45deg, #2ecc71, #27ae60);
+        transition: width 1s ease-in-out;
+    }
+    
+    /* Fancy metrics */
+    div[data-testid="stMetricValue"] {
+        font-size: 2rem;
+        background: linear-gradient(45deg, #1F77B4, #2ecc71);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    /* Button animations */
+    .stButton>button {
+        border-radius: 20px;
+        padding: 10px 25px;
+        border: none;
+        background: linear-gradient(45deg, #1F77B4, #2980b9);
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    /* Form fields styling */
+    div[data-baseweb="input"] input,
+    div[data-baseweb="textarea"] textarea {
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Sidebar styling */
+    section[data-testid="stSidebar"] {
+        background-color: rgba(28, 31, 38, 0.95);
+        backdrop-filter: blur(10px);
+    }
+    
+    /* Headers with gradient */
+    h1, h2, h3 {
+        background: linear-gradient(45deg, #1F77B4, #2ecc71);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: bold;
+    }
+    
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 5px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 5px;
+        padding: 10px 16px;
+        background-color: transparent;
+        color: #FFFFFF;
+        transition: all 0.3s ease;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(45deg, #1F77B4, #2980b9);
+        color: white !important;
+        font-weight: bold;
+    }
+    
+    /* Make sure tab text is always visible */
+    .stTabs [role="tab"] p {
+        color: inherit !important;
+    }
+    
+    /* Info boxes */
+    div.stAlert {
+        border-radius: 10px;
+        border: none;
+        padding: 15px;
+        backdrop-filter: blur(10px);
+    }
+</style>
+""", unsafe_allow_html=True)
 
 author = "Jimmy Nilsson"
 
@@ -64,23 +171,23 @@ if 'open_items' not in st.session_state:
 st.title("Projektplaneringsverktyg")
 
 # Create two columns for the layout
-col1, col2 = st.columns([2, 1])
+col1, col2 = st.columns([9, 1])
 
 with (col1):
-    main_tab1, main_tab2 = st.tabs(["Planering", "Analys"])
+    main_tab1, main_tab2 = st.tabs(["📆 **Planering**", "📊 **Analys**"])
 
     with main_tab1:
         planning_tab1, planning_tab2, planning_tab3, planning_tab4, planning_tab5 = st.tabs([
-            "Lägg till Mål",
-            "Lägg till Uppgift",
-            "Riskbedömning",
-            "Översikt",
-            "Hantera Tekniska Behov"
+            "📅 Lägg till Mål",
+            "📋 Lägg till Uppgift",
+            "🦺 Riskbedömning",
+            "🗂️ Översikt",
+            "🛠️ Hantera Tekniska Behov"
         ])
 
         with planning_tab1:
             with st.form("goal_form", clear_on_submit=True):
-                st.subheader("Lägg till Nytt Mål")
+                st.subheader("📅 Lägg till Nytt Mål")
                 goal_name = st.text_input("Målnamn", key="goal_name")
                 goal_description = st.text_area("Målbeskrivning", key="goal_desc")
                 goal_dates = st.date_input(
@@ -95,12 +202,13 @@ with (col1):
                                                             goal_description, goal_dates)
                     if success:
                         save_data(st.session_state.df)
-                        st.success("Mål tillagt!")
+                        st.balloons()
+                        st.success("🎉 Mål tillagt!")
 
         with planning_tab2:
             if len(st.session_state.df[st.session_state.df['Type'] == 'Goal']) > 0:
                 with st.form("task_form", clear_on_submit=True):
-                    st.subheader("Lägg till Ny Uppgift")
+                    st.subheader("📋 Lägg till Ny Uppgift")
 
                     selected_goal = st.selectbox(
                         "Välj Mål",
@@ -454,19 +562,22 @@ with (col1):
                                 st.rerun()
 
     with main_tab2:  # Analys Tab
-
         st.subheader("Analys")
-
-        gantt_charts, cost_analysis, work_hours, technical_needs, historical_data, \
+        st.info("💡 **Tips:**\n"
+                "- Dra i diagrammen för att zooma\n"
+                "- Dubbelklicka för att återställa vyn\n"
+                "- Hovra över datapunkter för mer information")
+        gantt_charts, cost_analysis, work_hours, technical_needs, completion_status, historical_data, \
             risk_matrix, risk_analysis, other = st.tabs([
-                "Gantt Schema",
-                "Kostnadsanalys",
-                "Arbetstid",
-                "Tekniska Behov",
-                "Historisk Data",
-                "Riskbedömning",
-                "Riskanalys",
-                "Annat"])
+                "📊 Gantt Schema",
+                "📈 Kostnadsanalys",
+                "⌚ Arbetstid",
+                "🔨 Tekniska Behov",
+                "✔️ Slutförande Status",
+                "📉 Historisk Data",
+                "🦺 Riskbedömning",
+                "👷 Riskanalys",
+                "🛑 Inget Ännu"])
 
         with cost_analysis:
             # Get all cost analysis figures at once
@@ -518,6 +629,11 @@ with (col1):
                 st.plotly_chart(px.pie(weather_df, values='Count', names='Weather',
                                        title='Väderbehov'), use_container_width=True)
 
+        with completion_status:
+            completion_figures = create_completion_analysis(st.session_state.df)
+            for fig in completion_figures:
+                st.plotly_chart(fig, use_container_width=True)
+
         with historical_data:
             # Add Archive Data button at the top of historical data tab
             if st.button("Arkivera Årets Data"):
@@ -549,3 +665,13 @@ with col2:
     st.info(f"//// By: {author}  -  st Version: {st.__version__} - "
             f"Python Version: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} ////")
     st.write("GitHub: --->https://github.com/brektzar/PlannerTool/tree/master<---")
+
+with st.expander("ℹ️ Snabbguide"):
+    st.markdown("""
+    ### Kom igång snabbt:
+    1. 🎯 **Skapa ett mål** i 'Lägg till Mål'-fliken
+    2. ✅ **Lägg till uppgifter** under 'Lägg till Uppgift'
+    3. 🦺 **Riskbedöm** i 'Riskbedömning'-fliken
+    4. ✔️ **Uppdatera status** när uppgifter är klara
+    5. 📊 **Visa analyser** i 'Översikt'-fliken
+    """)
