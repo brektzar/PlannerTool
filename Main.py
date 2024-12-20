@@ -1,7 +1,7 @@
 import streamlit as st
 from Data import (load_data, save_data, get_technical_needs_list,
                   load_technical_needs, save_technical_needs, WEATHER_CONDITIONS)
-from history import save_year_to_history, show_historical_analysis, load_historical_data
+from History import save_year_to_history, show_historical_analysis, load_historical_data
 from Analysis import (create_cost_analysis, create_gantt_charts,
                       analyze_work_hours, create_technical_needs_analysis)
 from Planning import add_goal, add_task, update_dataframe, toggle_task_completion, toggle_goal_completion
@@ -9,7 +9,7 @@ import datetime
 import sys
 import pandas as pd
 import plotly.express as px
-from risk_assessment import risk_assessment_app, display_risk_overview
+from Risk_Assessment import risk_assessment_app, display_risk_overview
 
 # Set page config
 st.set_page_config(layout="wide", page_title="Planeringsverktyg")
@@ -538,7 +538,7 @@ with (col1):
             display_risk_overview(st.session_state.df, st.session_state.risks, context="analysis")
 
         with risk_analysis:
-            from risk_assessment import create_risk_analysis
+            from Risk_Assessment import create_risk_analysis
 
             create_risk_analysis(st.session_state.risks)
 
