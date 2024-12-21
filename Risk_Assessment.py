@@ -6,6 +6,31 @@ from openpyxl.styles import PatternFill, Border, Side
 import datetime
 import plotly.graph_objects as go
 
+
+# """
+# Emojis som används i programmet:
+# 📋 : Uppgift
+# 📅 :
+# 🦺 : Riskbedömning
+# 👷 : Riskanalys
+# 🗂️ : Översikt
+# 🛠️ : Tekniska Behov
+# 🔨 : Tekniska Behov
+# 🎯 : Mål
+# 📆 : Planering
+# 📊 : Analys
+# 📈 : Kostnadsanalys
+# 📉 : Historisk Data
+# ✅ :
+# ✔️ :
+# 🔄 : Under Arbete
+# ❌ : Saknar uppgifter
+# 🎉 : Alla uppgifter klara
+# 💡 : Tips
+# ⌚ : Arbetstid
+# 🛑 : Inget Ännu
+# """
+
 # Risk severity matrix
 risk_matrix = {
     (1, 1): 1, (1, 2): 2, (1, 3): 3, (1, 4): 4,
@@ -326,6 +351,19 @@ def display_risk_overview(df, risks, context="main"):
 
 def risk_assessment_app(df):
     st.title("Riskbedömning")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.write(f"Riskbedömning är en systematisk process för att identifiera, "
+                 f"analysera och utvärdera risker i en verksamhet, arbetsmiljö eller situation. ")
+
+    with col2:
+        st.write(f"Syftet är att bedöma sannolikheten för att något oönskat ska inträffa och vilka konsekvenser"
+                 f" det kan få, för att sedan vidta åtgärder som minskar eller eliminerar riskerna.")
+    st.divider()
+
+    st.write(f"**Riskbedömning sker i samverkan mellan Chef, Skyddsombud och Medarbetare som är berörda. "
+             f"Denna riskbedömning görs på sedvanligt sätt med hjälp av riskmatrisen nedan.**")
 
     # Initialize session state for risks if not exists
     if 'risks' not in st.session_state:

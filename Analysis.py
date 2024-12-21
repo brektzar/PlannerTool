@@ -2,18 +2,44 @@ import plotly.express as px
 import plotly.graph_objects as plotly_graph_objects
 import pandas as pd
 import plotly.graph_objects as go
-# from plotly.subplots import make_subplots
-# import numpy as ny
-# import streamlit as st
-#
 
+# Importerade moduler som inte används för tillfället men kan behövas senare:
+# - from plotly.subplots import make_subplots
+# - import numpy as ny
+# - import streamlit as st
+
+"""
+Emoji-förklaring för användargränssnittet:
+📋 : Representerar en specifik uppgift eller task
+📅 : Används för datumrelaterade element
+🦺 : Indikerar riskbedömningsrelaterade element
+👷 : Visar riskanalysrelaterade element
+🗂️ : Används för översiktsvyer
+🛠️ : Indikerar tekniska behov och verktyg
+🔨 : Alternativ ikon för tekniska behov
+🎯 : Representerar projektmål
+📆 : Används för planeringsrelaterade element
+📊 : Indikerar analysrelaterade element
+📈 : Visar kostnadsanalys
+📉 : Representerar historisk data
+✅ : Indikerar slutförda element
+✔️ : Alternativ ikon för slutförda element
+🔄 : Visar pågående arbete
+❌ : Indikerar saknade eller ofullständiga uppgifter
+🎉 : Visar att alla uppgifter är klara
+💡 : Används för tips och råd
+⌚ : Indikerar arbetstidsrelaterade element
+🛑 : Används för element utan innehåll
+"""
+
+# Stänger av varningar för kedjade tilldelningar i pandas
 pd.options.mode.chained_assignment = None
 
 
 def create_cost_analysis(dataframe):
     tasks = dataframe[dataframe["Type"] == "Task"]
 
-    # Cost distribution by goal
+    # Kostnadsfördelning per mål
     goal_costs = tasks.groupby("Goal_Name").agg({
         "Task_Estimated_Cost": "sum",
         "Task_Total_Rental_Cost": "sum"
@@ -29,7 +55,7 @@ def create_cost_analysis(dataframe):
         barmode="stack"
     )
 
-    # Add time-based cost distribution
+    # Lägg till tidsbaserad kostnadsfördelning
     tasks['Month'] = pd.to_datetime(tasks['Task_Start_Date']).dt.strftime('%Y-%m')
     monthly_costs = tasks.groupby('Month').agg({
         'Task_Estimated_Cost': 'sum'
@@ -43,9 +69,9 @@ def create_cost_analysis(dataframe):
         labels={'Task_Estimated_Cost': 'Kostnad', 'Month': 'Månad'}
     )
 
-    # Add cost per personnel hour chart
+    # Lägg till kostnad per arbetstimme-diagram
     tasks['Cost_Per_Hour'] = tasks['Task_Estimated_Cost'] / (
-                tasks['Task_Estimated_Time'] * tasks['Task_Personnel_Count'])
+            tasks['Task_Estimated_Time'] * tasks['Task_Personnel_Count'])
     tasks['Cost_Per_Hour'] = tasks['Cost_Per_Hour'].fillna(0)
 
     fig_cost_per_hour = px.bar(
@@ -57,7 +83,7 @@ def create_cost_analysis(dataframe):
         labels={'Cost_Per_Hour': 'Kostnad/Timme', 'Task_Name': 'Uppgift'}
     )
 
-    # Add cumulative cost chart
+    # Lägg till kumulativt kostnadsdiagram
     tasks = tasks.sort_values('Task_Start_Date')
     tasks['Cumulative_Cost'] = tasks['Task_Estimated_Cost'].cumsum()
 
@@ -69,7 +95,7 @@ def create_cost_analysis(dataframe):
         labels={'Cumulative_Cost': 'Total Kostnad', 'Task_Start_Date': 'Datum'}
     )
 
-    # Add cost categories pie chart
+    # Lägg till kostnadskategorier pajdiagram
     cost_categories = tasks.groupby('Goal_Name').agg({
         'Task_Estimated_Cost': 'sum'
     }).reset_index()
@@ -85,25 +111,27 @@ def create_cost_analysis(dataframe):
 
 
 def create_gantt_charts(dataframe):
-    """Create Gantt charts for goals and tasks"""
+    """Skapar Gantt-scheman för mål och uppgifter
+    Returnerar ett dictionary med översiktsschema och individuella uppgiftsscheman per mål"""
     gantt_figures = {"overview": None, "tasks": {}}
-    
+
     try:
         if dataframe.empty:
             return gantt_figures
-            
+
         goals = dataframe[dataframe["Type"] == "Goal"]
         tasks = dataframe[dataframe["Type"] == "Task"]
-        
+
         if goals.empty:
             return gantt_figures
-            
-        # Create goals overview Gantt chart
+
+        # Skapa Gantt-schema för målöversikt
         try:
-            goals_data = goals[["Goal_Name", "Goal_Start_Date", "Goal_End_Date", "Goal_Completed"]]
-            goals_data.columns = ["Goal", "Start", "Finish", "Completed"]
-            goals_data['Completed'] = goals_data['Completed'].fillna(False)
-            
+            with pd.option_context('future.no_silent_downcasting', True):
+                goals_data = goals[["Goal_Name", "Goal_Start_Date", "Goal_End_Date", "Goal_Completed"]]
+                goals_data.columns = ["Goal", "Start", "Finish", "Completed"]
+                goals_data['Completed'] = goals_data['Completed'].fillna(False)
+
             overview_fig = px.timeline(
                 goals_data,
                 x_start="Start",
@@ -113,25 +141,25 @@ def create_gantt_charts(dataframe):
                 color="Completed",
                 color_discrete_map={True: "#2ecc71", False: "#e74c3c"}
             )
-            
+
             gantt_figures["overview"] = overview_fig
         except Exception as e:
-            print(f"Error creating overview Gantt chart: {str(e)}")
+            print(f"Fel vid skapande av översikt Gantt-schema: {str(e)}")
             return gantt_figures
-        
-        # Create individual task timelines for each goal
+
+        # Skapa individuella uppgiftsscheman för varje mål
         for _, goal in goals.iterrows():
             try:
                 goal_name = goal['Goal_Name']
                 goal_tasks = tasks[tasks['Goal_Name'] == goal_name]
-                
+
                 if goal_tasks.empty:
                     continue
-                    
+
                 gantt_data = goal_tasks[["Task_Name", "Task_Start_Date", "Task_End_Date", "Task_Completed"]]
                 gantt_data.columns = ["Task", "Start", "Finish", "Completed"]
                 gantt_data['Completed'] = gantt_data['Completed'].fillna(False)
-                
+
                 fig = px.timeline(
                     gantt_data,
                     x_start="Start",
@@ -141,23 +169,23 @@ def create_gantt_charts(dataframe):
                     color="Completed",
                     color_discrete_map={True: "#2ecc71", False: "#e74c3c"}
                 )
-                
+
                 gantt_figures["tasks"][goal_name] = fig
             except Exception as e:
-                print(f"Error creating Gantt chart for goal {goal_name}: {str(e)}")
+                print(f"Fel vid skapande av Gantt-schema för mål {goal_name}: {str(e)}")
                 continue
-        
+
         return gantt_figures
-        
+
     except Exception as e:
-        print(f"Error in create_gantt_charts: {str(e)}")
+        print(f"Fel i create_gantt_charts: {str(e)}")
         return gantt_figures
 
 
 def analyze_work_hours(dataframe):
     tasks = dataframe[dataframe["Type"] == "Task"]
 
-    # Task duration distribution
+    # Tidsfördelning för uppgifter
     fig_duration = px.bar(
         tasks,
         x='Task_Name',
@@ -168,17 +196,17 @@ def analyze_work_hours(dataframe):
                 'Task_Name': 'Uppgift',
                 'Goal_Name': 'Mål'},
     )
-    # Set minimum height in pixels
+    # Sätter minimi höjd i pixlar
     fig_duration.update_layout(height=600)
     fig_duration.update_layout(
         height=600,
         xaxis=dict(
-            rangeslider=dict(visible=True),  # Enable range slider
+            rangeslider=dict(visible=True),  # Aktiverar områdeslider
         ),
         yaxis=dict(title='Uppskattad Tid (timmar)')
     )
 
-    # Resource allocation by goal
+    # Resursallokering per mål
     goal_resources = tasks.groupby('Goal_Name').agg({
         'Task_Personnel_Count': 'sum',
         'Task_Estimated_Time': 'sum'
@@ -198,7 +226,7 @@ def analyze_work_hours(dataframe):
         }
     )
 
-    # Task complexity analysis
+    # Analys av uppgiftskomplexitet
     tasks['Complexity_Score'] = tasks['Task_Estimated_Time'] * tasks['Task_Personnel_Count']
     fig_complexity = px.bar(
         tasks.sort_values('Complexity_Score', ascending=False),
@@ -217,7 +245,7 @@ def analyze_work_hours(dataframe):
 def create_technical_needs_analysis(dataframe):
     tasks = dataframe[dataframe["Type"] == "Task"]
 
-    # Tool usage frequency
+    # Frekvens av verktygsanvändning
     tool_counts = []
     for tools in tasks['Task_Technical_Needs'].str.split(','):
         if isinstance(tools, list):
@@ -236,7 +264,7 @@ def create_technical_needs_analysis(dataframe):
         labels={'Count': 'Antal Användningar'}
     )
 
-    # Weather correlation
+    # Korrelation med väder
     weather_tools = []
     for idx, row in tasks.iterrows():
         if row['Task_Weather_Conditions'] != 'No data' and row['Task_Technical_Needs'] != 'No data':
@@ -301,24 +329,26 @@ def create_risk_matrix():
 
 
 def create_completion_analysis(dataframe):
-    """Create visualizations for goal and task completion status"""
+    """Skapar visualiseringar för mål- och uppgiftsstatus
+    Returnerar en lista med diagram för mål- och uppgiftsstatus"""
     completion_figures = []
-    
+
     try:
-        # Goal completion stats
+        # Statistisk över målstatus
         goals = dataframe[dataframe['Type'] == 'Goal']
         if goals.empty:
             return [go.Figure().update_layout(
-                title="No Goals Available",
-                annotations=[{"text": "Add some goals to see completion statistics", 
-                            "x": 0.5, "y": 0.5, "showarrow": False}]
+                title="Inga Mål Tillgängliga",
+                annotations=[{"text": "Lägg till några mål för att se slutförandestatistik",
+                              "x": 0.5, "y": 0.5, "showarrow": False}]
             )]
-        
-        goal_completion = goals['Goal_Completed'].fillna(False).value_counts()
-        
+
+        with pd.option_context('future.no_silent_downcasting', True):
+            goal_completion = goals['Goal_Completed'].fillna(False).value_counts()
+
         fig_goals = go.Figure(data=[
             go.Pie(
-                labels=['Completed', 'In Progress'],
+                labels=['Slutförda', 'Pågående'],
                 values=[
                     goal_completion.get(True, 0),
                     goal_completion.get(False, 0)
@@ -337,15 +367,15 @@ def create_completion_analysis(dataframe):
             }]
         )
         completion_figures.append(fig_goals)
-        
-        # Task completion stats
+
+        # Statistisk över uppgiftsstatus
         tasks = dataframe[dataframe['Type'] == 'Task']
         if not tasks.empty:
             task_completion = tasks['Task_Completed'].fillna(False).value_counts()
-            
+
             fig_tasks = go.Figure(data=[
                 go.Pie(
-                    labels=['Completed', 'In Progress'],
+                    labels=['Slutförda', 'Pågående'],
                     values=[
                         task_completion.get(True, 0),
                         task_completion.get(False, 0)
@@ -364,19 +394,19 @@ def create_completion_analysis(dataframe):
                 }]
             )
             completion_figures.append(fig_tasks)
-            
-            # Task completion by goal
+
+            # Uppgiftsstatus per mål
             try:
                 task_by_goal = pd.DataFrame({
                     'Goal': tasks['Goal_Name'],
                     'Status': tasks['Task_Completed'].fillna(False).map({True: 'Slutförda', False: 'Pågående'})
                 }).groupby(['Goal', 'Status']).size().unstack(fill_value=0)
-                
+
                 fig_by_goal = go.Figure(data=[
-                    go.Bar(name='Slutförda', y=task_by_goal.index, x=task_by_goal['Slutförda'], 
-                          orientation='h', marker_color='#2ecc71'),
-                    go.Bar(name='Pågående', y=task_by_goal.index, x=task_by_goal['Pågående'], 
-                          orientation='h', marker_color='#e74c3c')
+                    go.Bar(name='Slutförda', y=task_by_goal.index, x=task_by_goal['Slutförda'],
+                           orientation='h', marker_color='#2ecc71'),
+                    go.Bar(name='Pågående', y=task_by_goal.index, x=task_by_goal['Pågående'],
+                           orientation='h', marker_color='#e74c3c')
                 ])
                 fig_by_goal.update_layout(
                     title="Uppgiftsstatus per Mål",
@@ -386,14 +416,14 @@ def create_completion_analysis(dataframe):
                 )
                 completion_figures.append(fig_by_goal)
             except KeyError as e:
-                print(f"Error creating task by goal chart: {str(e)}")
-        
+                print(f"Fel vid skapande av uppgiftsstatus per mål-diagram: {str(e)}")
+
         return completion_figures
-    
+
     except Exception as e:
-        print(f"Error in create_completion_analysis: {str(e)}")
+        print(f"Fel i create_completion_analysis: {str(e)}")
         return [go.Figure().update_layout(
-            title="Error Creating Completion Analysis",
-            annotations=[{"text": f"An error occurred: {str(e)}", 
-                        "x": 0.5, "y": 0.5, "showarrow": False}]
+            title="Fel vid skapande av slutförandeanalys",
+            annotations=[{"text": f"Ett fel inträffade: {str(e)}",
+                          "x": 0.5, "y": 0.5, "showarrow": False}]
         )]

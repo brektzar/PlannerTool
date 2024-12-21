@@ -1,15 +1,44 @@
 import streamlit as st
+import datetime
+import sys
+import pandas as pd
+import plotly.express as px
+
+# Importerat från andra filer
 from Data import (load_data, save_data, get_technical_needs_list,
                   load_technical_needs, save_technical_needs, WEATHER_CONDITIONS)
 from History import save_year_to_history, show_historical_analysis, load_historical_data
 from Analysis import (create_cost_analysis, create_gantt_charts,
                       analyze_work_hours, create_technical_needs_analysis, create_completion_analysis)
-from Planning import add_goal, add_task, update_dataframe, toggle_task_completion, toggle_goal_completion
-import datetime
-import sys
-import pandas as pd
-import plotly.express as px
+from Planning import (add_goal, add_task, update_dataframe, toggle_task_completion, toggle_goal_completion,
+                      bug_tracking_tab)
 from Risk_Assessment import risk_assessment_app, display_risk_overview
+
+# """
+# Emojis som används i programmet:
+# 📋 : Uppgift
+# 📅 :
+# 🦺 : Riskbedömning
+# 👷 : Riskanalys
+# 🗂️ : Översikt
+# 🛠️ : Tekniska Behov
+# 🔨 : Tekniska Behov
+# 🎯 : Mål
+# 📆 : Planering
+# 📊 : Analys
+# 📈 : Kostnadsanalys
+# 📉 : Historisk Data
+# ✅ :
+# ✔️ :
+# 🔄 : Under Arbete
+# ❌ : Saknar uppgifter
+# 🎉 : Alla uppgifter klara
+# 💡 : Tips
+# ⌚ : Arbetstid
+# 🐛 : Rapportera Buggar
+# 🛑 : Inget Ännu
+# """
+
 
 # Set page config
 st.set_page_config(layout="wide", page_title="Planeringsverktyg")
@@ -30,13 +59,13 @@ st.markdown("""
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
-    
+
     /* Animated progress bars */
     .stProgress > div > div > div > div {
         background: linear-gradient(45deg, #2ecc71, #27ae60);
         transition: width 1s ease-in-out;
     }
-    
+
     /* Fancy metrics */
     div[data-testid="stMetricValue"] {
         font-size: 2rem;
@@ -44,7 +73,7 @@ st.markdown("""
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
-    
+
     /* Button animations */
     .stButton>button {
         border-radius: 20px;
@@ -57,7 +86,7 @@ st.markdown("""
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
-    
+
     /* Form fields styling */
     div[data-baseweb="input"] input,
     div[data-baseweb="textarea"] textarea {
@@ -65,13 +94,13 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.1);
         background-color: rgba(255, 255, 255, 0.05);
     }
-    
+
     /* Sidebar styling */
     section[data-testid="stSidebar"] {
         background-color: rgba(28, 31, 38, 0.95);
         backdrop-filter: blur(10px);
     }
-    
+
     /* Headers with gradient */
     h1, h2, h3 {
         background: linear-gradient(45deg, #1F77B4, #2ecc71);
@@ -79,7 +108,7 @@ st.markdown("""
         -webkit-text-fill-color: transparent;
         font-weight: bold;
     }
-    
+
     /* Tab styling */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
@@ -87,7 +116,7 @@ st.markdown("""
         border-radius: 10px;
         padding: 5px;
     }
-    
+
     .stTabs [data-baseweb="tab"] {
         border-radius: 5px;
         padding: 10px 16px;
@@ -95,28 +124,42 @@ st.markdown("""
         color: #FFFFFF;
         transition: all 0.3s ease;
     }
-    
+
     .stTabs [data-baseweb="tab"]:hover {
         background-color: rgba(255, 255, 255, 0.1);
     }
-    
+
     .stTabs [aria-selected="true"] {
         background: linear-gradient(45deg, #1F77B4, #2980b9);
         color: white !important;
         font-weight: bold;
     }
-    
+
     /* Make sure tab text is always visible */
     .stTabs [role="tab"] p {
         color: inherit !important;
     }
-    
+
     /* Info boxes */
     div.stAlert {
         border-radius: 10px;
         border: none;
         padding: 15px;
         backdrop-filter: blur(10px);
+    }
+
+    /* Fix for button text color */
+    .stButton button:active {
+        color: white !important;
+    }
+    .stButton button:focus {
+        color: white !important;
+    }
+    .stButton button:hover {
+        color: white !important;
+    }
+    .stButton button p {
+        color: white !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -174,11 +217,11 @@ st.title("Projektplaneringsverktyg")
 col1, col2 = st.columns([9, 1])
 
 with (col1):
-    main_tab1, main_tab2 = st.tabs(["📆 **Planering**", "📊 **Analys**"])
+    main_tab1, main_tab2, main_tab3 = st.tabs(["📆 **Planering**", "📊 **Analys**", "🐛 Rapportera Buggar"])
 
     with main_tab1:
         planning_tab1, planning_tab2, planning_tab3, planning_tab4, planning_tab5 = st.tabs([
-            "📅 Lägg till Mål",
+            "🎯 Lägg till Mål",
             "📋 Lägg till Uppgift",
             "🦺 Riskbedömning",
             "🗂️ Översikt",
@@ -187,7 +230,15 @@ with (col1):
 
         with planning_tab1:
             with st.form("goal_form", clear_on_submit=True):
-                st.subheader("📅 Lägg till Nytt Mål")
+                st.subheader("🎯 Lägg till Nytt Mål")
+
+                st.write(f"Här lägger man till nya mål.")
+                st.write(f"Mål är endast övergripande, exempelnamn: "
+                         f"'Bygg ett nytt Hantverkshus'")
+                st.write(f"Var så beskrivande som möjligt.")
+                st.write(f"**Viktig**: Fyll i alla fält.")
+                st.divider()
+
                 goal_name = st.text_input("Målnamn", key="goal_name")
                 goal_description = st.text_area("Målbeskrivning", key="goal_desc")
                 goal_dates = st.date_input(
@@ -209,6 +260,12 @@ with (col1):
             if len(st.session_state.df[st.session_state.df['Type'] == 'Goal']) > 0:
                 with st.form("task_form", clear_on_submit=True):
                     st.subheader("📋 Lägg till Ny Uppgift")
+                    st.write(f"Här lägger man till nya uppgifter.")
+                    st.write(f"Uppgifterna är mer inngående än målen, exempelnamn: "
+                             f"'Gräv nya stolphål med grävmaskin'")
+                    st.write(f"I uppgiften är det än viktigare att man är så beskrivande som möjligt.")
+                    st.write(f"**Viktig**: Fyll i alla fält. (Hyrinformation fylls endast i om något ska hyras)")
+                    st.divider()
 
                     selected_goal = st.selectbox(
                         "Välj Mål",
@@ -244,7 +301,7 @@ with (col1):
                         col5, col6 = st.columns(2)
                         with col5:
                             rental_item = st.text_input("Vad behöver hyras?", key="rental_item")
-                            rental_type = st.selectbox("Hyrtyp", ["Per timme", "Per dag"], key="rental_type")
+                            rental_type = st.selectbox("Hyrtyp", ["Timmar", "Dygn"], key="rental_type")
 
                         with col6:
                             rental_duration = st.number_input("Varaktighet", min_value=0, key="rental_duration")
@@ -297,9 +354,58 @@ with (col1):
 
         with planning_tab4:
             st.subheader("Mål- och Uppgiftsöversikt")
-            task_column, edit_column = st.columns(2)
+
+            st.write(f"Här får man en översikt över de mål och uppgifter man lagt till.")
+            st.write(f"Man kan ändra en uppgift genom att trycka på 'Redigera Mål och Uppgifter'.")
+            st.write(f"**Viktig**: Tryck på knappen innan du expanderar ett mål om du ska redigera,"
+                     f" har du expanderat ett mål så förminska detta först!")
+            st.write(f"Man kan även trycka i att uppgifterna och målen är färdiga på denna sidan, observera att alla "
+                     f"uppgifter måste vara klara innan man kan slutföra målet.")
+            st.warning("Denna biten av verktyget är lite segt och mindre buggar existerar!")
+            st.write(f"✅= klar, 🔄= Under Arbete, ❌= Saknar uppgifter")
+            st.divider()
+
+            task_column, task_column2, edit_column = st.columns(3)
+            with task_column:
+                st.write("Antal Mål:")
+                st.write(st.session_state.df[st.session_state.df['Type'] == 'Goal'].shape[0])
+            with task_column2:
+                st.write("Antal Uppgifter:")
+                st.write(st.session_state.df[st.session_state.df['Type'] == 'Task'].shape[0])
+
+            with edit_column:
+                st.session_state.edit_mode = st.toggle("Redigera Mål och Uppgifter")
+
+                if st.session_state.edited_data:  # Only show if there are changes to save
+                    if st.button("Spara Ändringar"):
+                        st.session_state.df = update_dataframe(st.session_state.df, st.session_state.edited_data)
+                        save_data(st.session_state.df)  # Save to file
+                        
+                        # Clear the edited data and reset states
+                        st.session_state.edited_data = {}
+                        st.session_state.open_items = set()
+                        st.session_state.edit_mode = False  # Turn off edit mode
+                        
+                        st.success("Ändringar sparade!")
+                        st.rerun()
+
+            st.divider()
+
             for _, goal in st.session_state.df[st.session_state.df['Type'] == 'Goal'].iterrows():
-                with st.expander(f"**Mål**: {goal['Goal_Name']}"):
+                # Get tasks for this goal
+                tasks = st.session_state.df[
+                    (st.session_state.df['Type'] == 'Task') &
+                    (st.session_state.df['Goal_Name'] == goal['Goal_Name'])
+                ]
+                
+                # Determine icon based on task status
+                if tasks.empty:
+                    completion_icon = "❌"  # No tasks
+                else:
+                    is_completed = all(tasks['Task_Completed']) and goal['Goal_Completed']
+                    completion_icon = "✅" if is_completed else "🔄"
+                
+                with st.expander(f"{completion_icon} **Mål**: {goal['Goal_Name']}"):
                     if st.session_state.edit_mode and st.checkbox(f"Redigera {goal['Goal_Name']}",
                                                                   key=f"edit_goal_{goal['Goal_Name']}"):
                         edited_goal = {
@@ -323,211 +429,218 @@ with (col1):
                     if len(tasks) > 0:
                         st.markdown("---")
                         for _, task in tasks.iterrows():
-                            if st.checkbox(
-                                    f"**{task['Task_Name']}**",
-                                    key=f"view_task_{goal['Goal_Name']}_{task['Task_Name']}",
-                                    value=f"view_task_{goal['Goal_Name']}_{task['Task_Name']}"
-                                          in st.session_state.open_items
-                            ):
-                                st.session_state.open_items.add(
-                                    f"view_task_{goal['Goal_Name']}_{task['Task_Name']}")
-                                edited_task = {}
-
-                                if st.session_state.edit_mode and st.checkbox(
-                                        "Grundinformation",
-                                        key=f"edit_basic_{task['Task_Name']}",
-                                        value=f"edit_basic_{task['Task_Name']}" in st.session_state.open_items
+                            task_col1, task_col2 = st.columns([8, 2])
+                            
+                            with task_col1:
+                                if st.button(
+                                    f"📋 **{task['Task_Name']}**",
+                                    key=f"view_task_{goal['Goal_Name']}_{task['Task_Name']}"
                                 ):
-                                    st.session_state.open_items.add(f"edit_basic_{task['Task_Name']}")
-                                    edited_task.update({
-                                        'name': st.text_input("**Uppgiftsnamn**", task['Task_Name']),
-                                        'description': st.text_area("**Beskrivning**", task['Task_Description']),
-                                        'dates': st.date_input("**Varaktighet**", value=(task['Task_Start_Date'],
-                                                                                         task['Task_End_Date']))
-                                    })
+                                    # Toggle the task view state
+                                    task_key = f"view_task_{goal['Goal_Name']}_{task['Task_Name']}"
+                                    if task_key in st.session_state.open_items:
+                                        st.session_state.open_items.remove(task_key)
+                                    else:
+                                        st.session_state.open_items.add(task_key)
+                                    st.rerun()
+                            
+                            with task_col2:
+                                # Show a small indicator if task is open
+                                if f"view_task_{goal['Goal_Name']}_{task['Task_Name']}" in st.session_state.open_items:
+                                    st.markdown("🔽")
                                 else:
-                                    st.session_state.open_items.discard(f"edit_basic_{task['Task_Name']}")
-                                    st.write(f"**Beskrivning:** {task['Task_Description']}")
-                                    st.write(
-                                        f"**Varaktighet:** {task['Task_Start_Date']} till {task['Task_End_Date']}")
+                                    st.markdown("▶️")
+                            
+                            # Show task details if it's open
+                            if f"view_task_{goal['Goal_Name']}_{task['Task_Name']}" in st.session_state.open_items:
+                                task_column, task_column2 = st.columns([2, 8])
+                                
+                                with task_column2:
+                                    st.divider()
+                                    edited_task = {}
 
-                                if st.session_state.edit_mode and st.checkbox("**Tid och Kostnad**",
-                                                                              key=f"edit_cost_"
-                                                                                  f"{task['Task_Name']}"):
-                                    column1, column2 = st.columns(2)
-                                    with column1:
-                                        est_time = st.number_input("**Tid (timmar)**",
-                                                                   value=task['Task_Estimated_Time'],
-                                                                   min_value=0)
-                                    with column2:
-                                        est_cost = st.number_input("**Kostnad**",
-                                                                   value=task['Task_Estimated_Cost'],
-                                                                   min_value=0.0, step=100.0)
-                                    edited_task.update({
-                                        'est_time': est_time,
-                                        'est_cost': est_cost
-                                    })
-                                else:
-                                    st.write(f"**Uppskattad Tid:** {task['Task_Estimated_Time']} timmar")
-                                    st.write(f"**Uppskattad Kostnad:** ${task['Task_Estimated_Cost']:.2f}")
+                                    # Rest of your task detail display code remains the same
+                                    if st.session_state.edit_mode:
+                                        st.divider()
+                                        if st.checkbox("Grundinformation", key=f"edit_basic_{task['Task_Name']}"):
+                                            edited_task.update({
+                                                'name': st.text_input("**Uppgiftsnamn**", task['Task_Name']),
+                                                'description': st.text_area("**Beskrivning**", task['Task_Description']),
+                                                'dates': st.date_input("**Varaktighet**", value=(task['Task_Start_Date'],
+                                                                                                 task['Task_End_Date']))
+                                            })
 
-                                if st.session_state.edit_mode and st.checkbox("**Krav**",
-                                                                              key=f"edit_reqs_"
-                                                                                  f"{task['Task_Name']}"):
-                                    tech_needs = st.multiselect(
-                                        "**Tekniska Behov**",
-                                        options=load_technical_needs(),
-                                        default=task['Task_Technical_Needs'].split(',') if
-                                        task['Task_Technical_Needs'] != "No data" else []
+                                        if st.checkbox("**Tid och Kostnad**", key=f"edit_cost_{task['Task_Name']}"):
+                                            column1, column2 = st.columns(2)
+                                            with column1:
+                                                est_time = st.number_input("**Tid (timmar)**",
+                                                                           value=task['Task_Estimated_Time'],
+                                                                           min_value=0)
+                                            with column2:
+                                                est_cost = st.number_input("**Kostnad**",
+                                                                           value=task['Task_Estimated_Cost'],
+                                                                           min_value=0.0, step=100.0)
+                                            edited_task.update({
+                                                'est_time': est_time,
+                                                'est_cost': est_cost
+                                            })
+
+                                        if st.checkbox("**Krav**", key=f"edit_reqs_{task['Task_Name']}"):
+                                            tech_needs = st.multiselect(
+                                                "**Tekniska Behov**",
+                                                options=load_technical_needs(),
+                                                default=task['Task_Technical_Needs'].split(',') if
+                                                task['Task_Technical_Needs'] != "No data" else []
+                                            )
+                                            weather_conds = st.multiselect(
+                                                "**Väderförhållanden**",
+                                                options=WEATHER_CONDITIONS,
+                                                default=task['Task_Weather_Conditions'].split(',') if
+                                                task['Task_Weather_Conditions'] != "No data" else []
+                                            )
+                                            edited_task.update({
+                                                'tech_needs': tech_needs,
+                                                'weather': weather_conds
+                                            })
+
+                                        if st.checkbox("**Personal**", key=f"edit_personnel_{task['Task_Name']}"):
+                                            personnel = st.slider(
+                                                "**Personalantal**",
+                                                min_value=1,
+                                                max_value=50,
+                                                value=task['Task_Personnel_Count']
+                                            )
+                                            edited_task.update({'personnel': personnel})
+
+                                        if st.checkbox("**Hyrinformation**", key=f"edit_rental_{task['Task_Name']}"):
+                                            column1, column2 = st.columns(2)
+                                            with column1:
+                                                rental_item = st.text_input("**Vad behöver hyras?**",
+                                                                            value=task['Task_Rental_Item'] if
+                                                                            task[
+                                                                                'Task_Rental_Item'] != "No data" else "")
+                                                rental_type = st.selectbox("**Hyrtyp**",
+                                                                           ["Timmar", "Dygn"],
+                                                                           index=0 if
+                                                                           task[
+                                                                               'Task_Rental_Type'] == "Per timme" else 1)
+                                            with column2:
+                                                rental_duration = st.number_input("**Varaktighet**",
+                                                                                  value=task['Task_Rental_Duration'],
+                                                                                  min_value=0)
+                                                rental_cost = st.number_input("**Kostnad per enhet**",
+                                                                              value=task['Task_Rental_Cost_Per_Unit'],
+                                                                              min_value=0.0,
+                                                                              step=100.0)
+
+                                            total_rental_cost = (
+                                                rental_duration * rental_cost if rental_duration > 0 and rental_cost > 0
+                                                else 0
+                                            )
+
+                                            edited_task.update({
+                                                'rental_item': rental_item,
+                                                'rental_type': rental_type,
+                                                'rental_duration': rental_duration,
+                                                'rental_cost_unit': rental_cost,
+                                                'total_rental_cost': total_rental_cost
+                                            })
+
+                                        if st.checkbox("**Övriga Behov**", key=f"edit_other_{task['Task_Name']}"):
+                                            other_needs = st.text_area(
+                                                "**Övriga Behov**",
+                                                value=task['Task_Other_Needs'] if task['Task_Other_Needs'] != "No data" else ""
+                                            )
+                                            edited_task.update({'other_needs': other_needs})
+
+                                        if edited_task:
+                                            task_key = f"task_{goal['Goal_Name']}_{task['Task_Name']}"
+                                            st.session_state.edited_data[task_key] = edited_task
+                                    else:
+                                        st.write(f"**Beskrivning:** {task['Task_Description']}")
+                                        st.write(
+                                            f"**Varaktighet:** {task['Task_Start_Date']} till {task['Task_End_Date']}")
+
+                                    if not st.session_state.edit_mode:
+                                        st.write(f"**Uppskattad Tid:** {task['Task_Estimated_Time']} timmar")
+                                        st.write(f"**Uppskattad Kostnad:** SEK {task['Task_Estimated_Cost']:.2f}")
+
+                                    if not st.session_state.edit_mode:
+                                        st.write(f"**Tekniska Behov:** {task['Task_Technical_Needs']}")
+                                        st.write(f"**Väderförhållanden:** {task['Task_Weather_Conditions']}")
+
+                                    if not st.session_state.edit_mode:
+                                        st.write(f"**Personalantal:** {task['Task_Personnel_Count']}")
+
+                                    if not st.session_state.edit_mode and task['Task_Needs_Rental']:
+                                        st.write("**Hyrinformation:**")
+                                        st.write(f"**- Vad:** {task['Task_Rental_Item']}")
+                                        st.write(f"**- Typ:** {task['Task_Rental_Type']}")
+                                        st.write(f"**- Varaktighet:** {task['Task_Rental_Duration']} "
+                                                 f"{task['Task_Rental_Type'].lower()}")
+                                        st.write(
+                                            f"**- Kostnad per enhet:** SEK {task['Task_Rental_Cost_Per_Unit']:.2f}")
+                                        st.write(f"**- Total hyrkostnad:** SEK {task['Task_Total_Rental_Cost']:.2f}")
+
+                                    if not st.session_state.edit_mode:
+                                        st.write(f"**Övriga Behov:** {task['Task_Other_Needs']}")
+
+                                    # Add task completion checkbox
+                                    st.divider()
+                                    task_completed = st.checkbox(
+                                        "Uppgift slutförd",
+                                        value=task['Task_Completed'],
+                                        key=f"task_complete_{goal['Goal_Name']}_{task['Task_Name']}"
                                     )
-                                    weather_conds = st.multiselect(
-                                        "**Väderförhållanden**",
-                                        options=WEATHER_CONDITIONS,
-                                        default=task['Task_Weather_Conditions'].split(',') if
-                                        task['Task_Weather_Conditions'] != "No data" else []
-                                    )
-                                    edited_task.update({
-                                        'tech_needs': tech_needs,
-                                        'weather': weather_conds
-                                    })
-                                else:
-                                    st.write(f"**Tekniska Behov:** {task['Task_Technical_Needs']}")
-                                    st.write(f"**Väderförhållanden:** {task['Task_Weather_Conditions']}")
-
-                                if st.session_state.edit_mode and st.checkbox("**Personal**",
-                                                                              key=f"edit_personnel_"
-                                                                                  f"{task['Task_Name']}"):
-                                    personnel = st.slider(
-                                        "**Personalantal**",
-                                        min_value=1,
-                                        max_value=50,
-                                        value=task['Task_Personnel_Count']
-                                    )
-                                    edited_task.update({'personnel': personnel})
-                                else:
-                                    st.write(f"**Personalantal:** {task['Task_Personnel_Count']}")
-
-                                if st.session_state.edit_mode and st.checkbox("**Hyrinformation**",
-                                                                              key=f"edit_rental_"
-                                                                                  f"{task['Task_Name']}"):
-                                    column1, column2 = st.columns(2)
-                                    with column1:
-                                        rental_item = st.text_input("**Vad behöver hyras?**",
-                                                                    value=task['Task_Rental_Item'] if
-                                                                    task[
-                                                                        'Task_Rental_Item'] != "No data" else "")
-                                        rental_type = st.selectbox("**Hyrtyp**",
-                                                                   ["Timmar", "Dygn"],
-                                                                   index=0 if
-                                                                   task[
-                                                                       'Task_Rental_Type'] == "Per timme" else 1)
-                                    with column2:
-                                        rental_duration = st.number_input("**Varaktighet**",
-                                                                          value=task['Task_Rental_Duration'],
-                                                                          min_value=0)
-                                        rental_cost = st.number_input("**Kostnad per enhet**",
-                                                                      value=task['Task_Rental_Cost_Per_Unit'],
-                                                                      min_value=0.0,
-                                                                      step=100.0)
-
-                                    total_rental_cost = (
-                                        rental_duration * rental_cost if rental_duration > 0 and rental_cost > 0
-                                        else 0
-                                    )
-
-                                    if total_rental_cost > 0:
-                                        st.write(f"**Total Hyrkostnad:** ${total_rental_cost:.2f}")
-
-                                    edited_task.update({
-                                        'rental_item': rental_item,
-                                        'rental_type': rental_type,
-                                        'rental_duration': rental_duration,
-                                        'rental_cost_unit': rental_cost,
-                                        'total_rental_cost': total_rental_cost
-                                    })
-                                elif task['Task_Needs_Rental']:
-                                    st.write("**Hyrinformation:**")
-                                    st.write(f"**- Vad:** {task['Task_Rental_Item']}")
-                                    st.write(f"**- Typ:** {task['Task_Rental_Type']}")
-                                    st.write(f"**- Varaktighet:** {task['Task_Rental_Duration']} "
-                                             f"{task['Task_Rental_Type'].lower()}")
-                                    st.write(
-                                        f"**- Kostnad per enhet:** ${task['Task_Rental_Cost_Per_Unit']:.2f}")
-                                    st.write(f"**- Total hyrkostnad:** ${task['Task_Total_Rental_Cost']:.2f}")
-
-                                if st.session_state.edit_mode and st.checkbox("**Övriga Behov**",
-                                                                              key=f"edit_other_"
-                                                                                  f"{task['Task_Name']}"):
-                                    other_needs = st.text_area(
-                                        "**Övriga Behov**",
-                                        value=task['Task_Other_Needs'] if task['Task_Other_Needs'] != "No data" else ""
-                                    )
-                                    edited_task.update({'other_needs': other_needs})
-                                else:
-                                    st.write(f"**Övriga Behov:** {task['Task_Other_Needs']}")
-
-                                # Add task completion checkbox
-                                task_completed = st.checkbox(
-                                    "Uppgift slutförd",
-                                    value=task['Task_Completed'],
-                                    key=f"task_complete_{goal['Goal_Name']}_{task['Task_Name']}"
-                                )
-                                if task_completed != task['Task_Completed']:
-                                    st.session_state.df = toggle_task_completion(
-                                        st.session_state.df,
-                                        goal['Goal_Name'],
-                                        task['Task_Name']
-                                    )
-                                    save_data(st.session_state.df)
+                                    st.divider()
+                                    if task_completed != task['Task_Completed']:
+                                        st.session_state.df = toggle_task_completion(
+                                            st.session_state.df,
+                                            goal['Goal_Name'],
+                                            task['Task_Name']
+                                        )
+                                        save_data(st.session_state.df)
 
                             else:
                                 st.session_state.open_items.discard(
                                     f"view_task_{goal['Goal_Name']}_{task['Task_Name']}")
+
+                    # Check if there are any tasks for this goal
+                    if len(tasks) > 0:
+                        # Check completion status and show appropriate message
+                        all_tasks_completed = all(tasks['Task_Completed'])
+                        if all_tasks_completed != goal['Goal_Completed']:
+                            # Automatically update goal completion status
+                            st.session_state.df, success, message = toggle_goal_completion(
+                                st.session_state.df, goal['Goal_Name'])
+                            if success:
+                                save_data(st.session_state.df)
+                                if all_tasks_completed:
+                                    st.success("🎉 Alla uppgifter är klara! Målet har automatiskt markerats som slutfört.")
+                                else:
+                                    st.info("ℹ️ Målet har automatiskt markerats som ej slutfört då inte alla uppgifter är klara.")
+                        else:
+                            # Show current status
+                            if all_tasks_completed:
+                                st.success("✅ Målet är slutfört!")
+                            else:
+                                st.info("🔄 Målet har pågående uppgifter.")
                     else:
-                        st.write("**Inga uppgifter tillagda ännu för detta mål.**")
-
-                    # Add goal completion checkbox
-                    tasks = st.session_state.df[
-                        (st.session_state.df['Type'] == 'Task') &
-                        (st.session_state.df['Goal_Name'] == goal['Goal_Name'])
-                        ]
-
-                    goal_completed = st.checkbox(
-                        "Mål slutfört",
-                        value=goal['Goal_Completed'],
-                        disabled=not all(tasks['Task_Completed']),
-                        key=f"goal_complete_{goal['Goal_Name']}"
-                    )
-
-                    if goal_completed != goal['Goal_Completed']:
-                        st.session_state.df, success, message = toggle_goal_completion(
-                            st.session_state.df, goal['Goal_Name'])
-                        if success:
-                            save_data(st.session_state.df)
-
-            with edit_column:
-                st.session_state.edit_mode = st.toggle("Redigera Mål och Uppgifter")
-
-                if st.session_state.edit_mode and st.session_state.edited_data:
-                    if st.button("Spara Ändringar"):
-                        st.session_state.df = update_dataframe(st.session_state.df,
-                                                               st.session_state.edited_data)
-                        save_data(st.session_state.df)
-
-                        st.session_state.edited_data = {}
-                        st.session_state.open_items = set()
-                        st.session_state.edit_mode = False
-
-                        st.success("Ändringar sparade!")
+                        st.warning("❌ Ingen uppgift har ännu gjorts för detta målet.")
 
         with planning_tab5:
             st.subheader("Hantera Tekniska Behov")
+
+            st.write(f"Här lägger man till redskap som sedan blir valbara när man skapar uppgifter.")
+            st.write(f"Verktygen delas upp i övergripande kategorier, välj en kategori och skriv namnet på redskapet.")
+
+            st.divider()
 
             tech_needs = load_technical_needs()
 
             categories = sorted(set(need.split(" - ")[0] for need in tech_needs))
 
-            with st.expander("Lägg till nytt redskap"):
+            with st.expander("🔨 Lägg till nytt redskap"):
                 with st.form("add_need"):
                     category = st.selectbox(
                         "Välj Kategori",
@@ -658,6 +771,9 @@ with (col1):
 
             create_risk_analysis(st.session_state.risks)
 
+    with main_tab3:
+        bug_tracking_tab()
+
 st.divider()
 
 col1, col2 = st.columns([2, 1])
@@ -672,6 +788,5 @@ with st.expander("ℹ️ Snabbguide"):
     1. 🎯 **Skapa ett mål** i 'Lägg till Mål'-fliken
     2. ✅ **Lägg till uppgifter** under 'Lägg till Uppgift'
     3. 🦺 **Riskbedöm** i 'Riskbedömning'-fliken
-    4. ✔️ **Uppdatera status** när uppgifter är klara
-    5. 📊 **Visa analyser** i 'Översikt'-fliken
+    4. 📊 **Visa analyser** i 'Översikt'-fliken
     """)
