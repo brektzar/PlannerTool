@@ -1,5 +1,6 @@
 import pandas as pd
 import datetime
+from database import get_database
 
 
 # DataFrame structure
@@ -18,48 +19,79 @@ def create_empty_dataframe():
 # Data loading and saving functions
 def load_data():
     try:
-        df = pd.read_csv('planner_tool.csv')
-        if df.empty:
+        db = get_database()
+        data = list(db.goals.find({}, {'_id': 0}))  # Exclude MongoDB _id field
+        
+        if not data:
             return create_empty_dataframe()
-
+            
+        df = pd.DataFrame(data)
+        
+        # Convert date strings to datetime.date objects
         date_columns = ['Goal_Start_Date', 'Goal_End_Date', 'Task_Start_Date', 'Task_End_Date']
         for col in date_columns:
             if col in df.columns:
                 df[col] = pd.to_datetime(df[col], format='mixed', errors='coerce').dt.date
-
+        
         # Initialize completion columns if they don't exist
         if 'Goal_Completed' not in df.columns: df['Goal_Completed'] = False
         if 'Task_Completed' not in df.columns: df['Task_Completed'] = False
+        
         return df
-    except (FileNotFoundError, pd.errors.EmptyDataError):
+    except Exception as e:
+        print(f"Error loading data from MongoDB: {e}")
         return create_empty_dataframe()
 
 
 def save_data(df):
-    df.to_csv('planner_tool.csv', index=False)
+    try:
+        db = get_database()
+        # Convert DataFrame to dict records
+        records = df.to_dict('records')
+        
+        # Convert date objects to strings for MongoDB
+        for record in records:
+            for key, value in record.items():
+                if isinstance(value, datetime.date):
+                    record[key] = value.isoformat()
+        
+        # Clear existing data and insert new
+        db.goals.delete_many({})
+        if records:
+            db.goals.insert_many(records)
+    except Exception as e:
+        print(f"Error saving data to MongoDB: {e}")
 
 
 # Technical needs management
 def load_technical_needs():
     try:
-        df = pd.read_csv('technical_needs.csv')
-        df['SortKey'] = df['Redskap'].apply(lambda x: x.split(" - ")[0])
-        df = df.sort_values(by='SortKey').drop(columns=['SortKey'])
-        return df['Redskap'].tolist()
-    except FileNotFoundError:
-        default_needs = [
-            'Traktor - Utan Redskap',
-            'Fyrhjuling - Utan Redskap',
-            'Handverktyg - Övrigt',
-            'Elverktyg - Övrigt',
-            'Övrigt - Bil'
-        ]
-        pd.DataFrame({'Redskap': default_needs}).to_csv('technical_needs.csv', index=False)
-        return default_needs
+        db = get_database()
+        needs = list(db.technical_needs.find({}, {'_id': 0}))
+        if not needs:
+            default_needs = [
+                'Traktor - Utan Redskap',
+                'Fyrhjuling - Utan Redskap',
+                'Handverktyg - Övrigt',
+                'Elverktyg - Övrigt',
+                'Övrigt - Bil'
+            ]
+            db.technical_needs.insert_many([{'Redskap': need} for need in default_needs])
+            return default_needs
+        return [need['Redskap'] for need in needs]
+    except Exception as e:
+        print(f"Error loading technical needs from MongoDB: {e}")
+        return []
 
 
 def save_technical_needs(needs_list):
-    pd.DataFrame({'Redskap': needs_list}).to_csv('technical_needs.csv', index=False)
+    try:
+        db = get_database()
+        db.technical_needs.delete_many({})
+        if needs_list:
+            db.technical_needs.insert_many([{'Redskap': need} for need in needs_list])
+    except Exception as e:
+        print(f"Error saving technical needs to MongoDB: {e}")
 
 
 def get_technical_needs_list():
@@ -113,3 +145,50 @@ def convert_rental_info(rental_item, rental_duration, rental_cost_unit):
         'rental_cost_unit': rental_cost_unit,
         'total_rental_cost': rental_duration * rental_cost_unit
     }
+
+
+def save_risk_data(risks):
+    """Save risks to MongoDB"""
+    try:
+        db = get_database()
+        # Clear existing risks
+        db.risks.delete_many({})
+        # Insert new risks if any exist
+        if risks:
+            # Convert any date objects to strings
+            formatted_risks = []
+            for risk in risks:
+                risk_copy = risk.copy()
+                for key, value in risk_copy.items():
+                    if isinstance(value, (datetime.date, datetime.datetime)):
+                        risk_copy[key] = value.isoformat()
+                formatted_risks.append(risk_copy)
+            
+            db.risks.insert_many(formatted_risks)
+            print(f"Saved {len(risks)} risks to database")  # Debug print
+        return True
+    except Exception as e:
+        print(f"Error saving risks: {str(e)}")
+        return False
+
+
+def load_risk_data():
+    """Load risks from MongoDB"""
+    try:
+        db = get_database()
+        risks = list(db.risks.find({}, {'_id': 0}))
+        print(f"Loaded {len(risks)} risks from database")  # Debug print
+        
+        # Convert date strings back to date objects
+        for risk in risks:
+            if 'action_date' in risk:
+                risk['action_date'] = datetime.datetime.strptime(
+                    risk['action_date'], '%Y-%m-%d').date()
+            if 'follow_up_date' in risk:
+                risk['follow_up_date'] = datetime.datetime.strptime(
+                    risk['follow_up_date'], '%Y-%m-%d').date()
+        
+        return risks
+    except Exception as e:
+        print(f"Error loading risks: {str(e)}")
+        return []

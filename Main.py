@@ -13,6 +13,7 @@ from Analysis import (create_cost_analysis, create_gantt_charts,
 from Planning import (add_goal, add_task, update_dataframe, toggle_task_completion, toggle_goal_completion,
                       bug_tracking_tab)
 from Risk_Assessment import risk_assessment_app, display_risk_overview
+from Admin import admin_panel
 
 # """
 # Emojis som används i programmet:
@@ -32,7 +33,7 @@ from Risk_Assessment import risk_assessment_app, display_risk_overview
 # ✔️ :
 # 🔄 : Under Arbete
 # ❌ : Saknar uppgifter
-# 🎉 : Alla uppgifter klara
+# �� : Alla uppgifter klara
 # 💡 : Tips
 # ⌚ : Arbetstid
 # 🐛 : Rapportera Buggar
@@ -209,6 +210,8 @@ if 'edited_data' not in st.session_state:
     st.session_state.edited_data = {}
 if 'open_items' not in st.session_state:
     st.session_state.open_items = set()
+if 'risks' not in st.session_state:
+    st.session_state.risks = []
 
 # Main layout
 st.title("Projektplaneringsverktyg")
@@ -217,7 +220,12 @@ st.title("Projektplaneringsverktyg")
 col1, col2 = st.columns([9, 1])
 
 with (col1):
-    main_tab1, main_tab2, main_tab3 = st.tabs(["📆 **Planering**", "📊 **Analys**", "🐛 Rapportera Buggar"])
+    main_tab1, main_tab2, main_tab3, main_tab4 = st.tabs([
+        "📆 **Planering**", 
+        "📊 **Analys**", 
+        "🐛 Rapportera Buggar",
+        "🔐 Admin Panel"
+    ])
 
     with main_tab1:
         planning_tab1, planning_tab2, planning_tab3, planning_tab4, planning_tab5 = st.tabs([
@@ -773,6 +781,9 @@ with (col1):
 
     with main_tab3:
         bug_tracking_tab()
+
+    with main_tab4:
+        admin_panel()
 
 st.divider()
 

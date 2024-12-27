@@ -3,37 +3,49 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from datetime import datetime
+from database import get_database
 
 
 def load_historical_data():
-    """Load data from history.csv"""
+    """Load data from MongoDB history collection"""
     try:
-        return pd.read_csv('history.csv')
-    except FileNotFoundError:
+        db = get_database()
+        data = list(db.history.find({}, {'_id': 0}))
+        if not data:
+            return pd.DataFrame()
+        return pd.DataFrame(data)
+    except Exception as e:
+        print(f"Error loading historical data: {e}")
         return pd.DataFrame()
 
 
 def save_year_to_history(current_data):
-    """Archive current year's data to history.csv"""
+    """Archive current year's data to MongoDB history collection"""
     try:
-        # Load existing historical data
-        hist_df = load_historical_data()
-
+        db = get_database()
+        
+        # Create a copy of the dataframe to avoid modifying the original
+        data_to_save = current_data.copy()
+        
         # Add year and timestamp information
-        current_data['Archive_Year'] = datetime.now().year
-        current_data['Archive_Date'] = datetime.now().strftime('%Y-%m-%d')
-
-        # Combine with existing historical data
-        if hist_df.empty:
-            hist_df = current_data
-        else:
-            hist_df = pd.concat([hist_df, current_data], ignore_index=True)
-
-        # Save to history.csv
-        hist_df.to_csv('history.csv', index=False)
+        data_to_save['Archive_Year'] = datetime.now().year
+        data_to_save['Archive_Date'] = datetime.now().strftime('%Y-%m-%d')
+        
+        # Convert DataFrame to records
+        records = data_to_save.to_dict('records')
+        
+        # Convert date objects to strings for MongoDB
+        for record in records:
+            for key, value in record.items():
+                if hasattr(value, 'isoformat'):  # Check if object has isoformat method
+                    record[key] = value.isoformat()
+        
+        # Insert new records
+        if records:
+            db.history.insert_many(records)
         return True
-    except Exception as exception:
-        st.error(f"Error saving to history: {str(exception)}")
+    except Exception as e:
+        st.error(f"Error saving to history: {str(e)}")
         return False
 
 

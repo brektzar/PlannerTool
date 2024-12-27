@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from Data import validate_dates, convert_rental_info, WEATHER_CONDITIONS
 from datetime import datetime
+from database import get_database
 
 # """
 # Emojis som används i programmet:
@@ -248,12 +249,27 @@ def toggle_goal_completion(dataframe, goal_name):
 
 def load_bugs():
     try:
-        return pd.read_csv('bugslist.csv')
-    except FileNotFoundError:
+        db = get_database()
+        bugs = list(db.bugs.find({}, {'_id': 0}))
+        if not bugs:
+            return pd.DataFrame(columns=['description', 'location', 'date_reported', 'status'])
+        return pd.DataFrame(bugs)
+    except Exception as e:
+        print(f"Error loading bugs from MongoDB: {e}")
         return pd.DataFrame(columns=['description', 'location', 'date_reported', 'status'])
 
 def save_bugs(bugs_df):
-    bugs_df.to_csv('bugslist.csv', index=False)
+    try:
+        db = get_database()
+        # Convert DataFrame to records
+        records = bugs_df.to_dict('records')
+        
+        # Clear existing bugs and insert new ones
+        db.bugs.delete_many({})
+        if records:
+            db.bugs.insert_many(records)
+    except Exception as e:
+        print(f"Error saving bugs to MongoDB: {e}")
 
 def get_all_locations():
     return [
@@ -334,15 +350,5 @@ def bug_tracking_tab():
                     bugs_df.at[idx, 'status'] = 'Fixad' if new_status else 'Ej Fixad'
                     save_bugs(bugs_df)
                     st.rerun()
-                    
-                # Add remove button
-                if st.button("Ta bort", key=f"remove_bug_{idx}"):
-                    # Remove the bug from the DataFrame
-                    bugs_df = bugs_df.drop(idx)
-                    # Save the updated DataFrame
-                    save_bugs(bugs_df)
-                    st.success("Bug borttagen!")
-                    st.rerun()
-    
     else:
         st.info("Inga buggar rapporterade ännu.")

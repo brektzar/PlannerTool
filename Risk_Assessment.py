@@ -5,6 +5,8 @@ import openpyxl
 from openpyxl.styles import PatternFill, Border, Side
 import datetime
 import plotly.graph_objects as go
+from Data import save_risk_data, load_risk_data
+from database import get_database
 
 
 # """
@@ -252,84 +254,10 @@ def parse_excel_to_risks(uploaded_file):
 
 
 def display_risk_overview(df, risks, context="main"):
-    """
-    Display risk overview with Excel export/import functionality
-    Args:
-        df: DataFrame with goals and tasks
-        risks: List of risks to display
-        context: String to create unique keys for Streamlit elements
-    """
-    if risks:
-        st.subheader("Tillagda risker")
-
-        # Add Excel export button at the top
-        col1, col2 = st.columns([1, 4])
-        with col1:
-            if st.button("Generera Excel", key=f"generate_excel_{context}"):
-                excel_file = create_excel_file(risks)
-                st.download_button(
-                    label="Ladda ner Excel-fil",
-                    data=excel_file,
-                    file_name="risk_assessment.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    key=f"download_excel_{context}"
-                )
-
-        # Get goals for filtering
-        goals = df[df['Type'] == 'Goal']['Goal_Name'].unique()
-
-        # Create a selectbox for goal filtering
-        goal_filter = st.selectbox(
-            "Filtrera efter mål",
-            ["Alla mål"] + list(goals),
-            key=f"goal_filter_{context}"
-        )
-
-        # Filter risks based on selected goal
-        filtered_risks = (
-            risks if goal_filter == "Alla mål"
-            else [risk for risk in risks if risk['goal'] == goal_filter]
-        )
-
-        # Display risks in a single level of expanders
-        for i, risk in enumerate(filtered_risks):
-            with st.expander(
-                    f"Mål: {risk['goal']} | Uppgift: {risk['task']} | Risk: {risk['name']}",
-                    expanded=False
-            ):
-                # Create two columns for better layout
-                col1, col2 = st.columns([2, 1])
-
-                with col1:
-                    st.write(f"**Beskrivning:** {risk['description']}")
-                    st.write(f"**Åtgärd:** {risk['action']}")
-                    if risk['comments']:
-                        st.write(f"**Kommentarer:** {risk['comments']}")
-
-                with col2:
-                    st.markdown(
-                        get_severity_html(
-                            risk['severity_label'],
-                            risk['severity_color'],
-                            risk['severity']
-                        ),
-                        unsafe_allow_html=True
-                    )
-                    st.write(f"**Ansvarig:** {risk['responsible']}")
-                    st.write(f"**Datum för åtgärd:** {risk['action_date']}")
-                    st.write(f"**Datum för uppföljning:** {risk['follow_up_date']}")
-
-                # Add metrics for quick overview
-                m1, m2, m3 = st.columns(3)
-                with m1:
-                    st.metric("Sannolikhet", risk['likelihood'])
-                with m2:
-                    st.metric("Konsekvens", risk['impact'])
-                with m3:
-                    st.metric("Risk", risk['severity'])
-    else:
+    """Display risk overview with Excel export/import functionality"""
+    if not risks:
         st.info("Inga risker har lagts till ännu.")
-
+        
         # Add Excel upload functionality
         st.write("Du kan ladda upp en tidigare sparad Excel-fil med risker:")
         uploaded_file = st.file_uploader(
@@ -345,8 +273,80 @@ def display_risk_overview(df, risks, context="main"):
             else:
                 if st.button("Importera risker från Excel", key=f"import_excel_{context}"):
                     st.session_state.risks = imported_risks
-                    st.success(f"{len(imported_risks)} risker har importerats!")
-                    st.rerun()
+                    if save_risk_data(imported_risks):
+                        st.success(f"{len(imported_risks)} risker har importerats!")
+                        st.rerun()
+                    else:
+                        st.error("Fel vid sparande av importerade risker")
+        return
+
+    st.subheader("Tillagda risker")
+
+    # Add Excel export button at the top
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        if st.button("Generera Excel", key=f"generate_excel_{context}"):
+            excel_file = create_excel_file(risks)
+            st.download_button(
+                label="Ladda ner Excel-fil",
+                data=excel_file,
+                file_name="risk_assessment.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key=f"download_excel_{context}"
+            )
+
+    # Get goals for filtering
+    goals = df[df['Type'] == 'Goal']['Goal_Name'].unique()
+
+    # Create a selectbox for goal filtering
+    goal_filter = st.selectbox(
+        "Filtrera efter mål",
+        ["Alla mål"] + list(goals),
+        key=f"goal_filter_{context}"
+    )
+
+    # Filter risks based on selected goal
+    filtered_risks = (
+        risks if goal_filter == "Alla mål"
+        else [risk for risk in risks if risk['goal'] == goal_filter]
+    )
+
+    # Display risks in a single level of expanders
+    for i, risk in enumerate(filtered_risks):
+        with st.expander(
+                f"Mål: {risk['goal']} | Uppgift: {risk['task']} | Risk: {risk['name']}",
+                expanded=False
+        ):
+            # Create two columns for better layout
+            col1, col2 = st.columns([2, 1])
+
+            with col1:
+                st.write(f"**Beskrivning:** {risk['description']}")
+                st.write(f"**Åtgärd:** {risk['action']}")
+                if risk['comments']:
+                    st.write(f"**Kommentarer:** {risk['comments']}")
+
+            with col2:
+                st.markdown(
+                    get_severity_html(
+                        risk['severity_label'],
+                        risk['severity_color'],
+                        risk['severity']
+                    ),
+                    unsafe_allow_html=True
+                )
+                st.write(f"**Ansvarig:** {risk['responsible']}")
+                st.write(f"**Datum för åtgärd:** {risk['action_date']}")
+                st.write(f"**Datum för uppföljning:** {risk['follow_up_date']}")
+
+            # Add metrics for quick overview
+            m1, m2, m3 = st.columns(3)
+            with m1:
+                st.metric("Sannolikhet", risk['likelihood'])
+            with m2:
+                st.metric("Konsekvens", risk['impact'])
+            with m3:
+                st.metric("Risk", risk['severity'])
 
 
 def risk_assessment_app(df):
@@ -365,8 +365,13 @@ def risk_assessment_app(df):
     st.write(f"**Riskbedömning sker i samverkan mellan Chef, Skyddsombud och Medarbetare som är berörda. "
              f"Denna riskbedömning görs på sedvanligt sätt med hjälp av riskmatrisen nedan.**")
 
-    # Initialize session state for risks if not exists
-    if 'risks' not in st.session_state:
+    # Load risks at the start of the function
+    try:
+        # Force reload risks from database
+        st.session_state.risks = load_risk_data()
+        print(f"Loaded {len(st.session_state.risks)} risks from database")  # Debug print
+    except Exception as e:
+        st.error(f"Error loading risks: {str(e)}")
         st.session_state.risks = []
 
     # Create tabs for input and overview
@@ -440,11 +445,22 @@ def risk_assessment_app(df):
                 }
 
                 st.session_state.risks.append(new_risk)
-                st.success("Risk tillagd!")
+                if save_risk_data(st.session_state.risks):
+                    st.success("Risk sparad i databasen!")
+                else:
+                    st.error("Fel vid sparande av risk")
             else:
                 st.error("Vänligen fyll i alla obligatoriska fält")
 
+        # Add debug information
+        st.write(f"Currently loaded risks: {len(st.session_state.risks)}")
+
     with overview_tab:
+        if not st.session_state.risks:
+            st.info("Inga risker har lagts till ännu.")
+        else:
+            st.write(f"Visar {len(st.session_state.risks)} risker")
+        
         display_risk_overview(df, st.session_state.risks, context="risk_app")
 
 
@@ -457,7 +473,7 @@ def create_risk_analysis(risks):
     # Convert risks to DataFrame for easier analysis
     risk_df = pd.DataFrame(risks)
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1, 2])
 
     with col1:
         # Risk severity distribution
@@ -490,18 +506,45 @@ def create_risk_analysis(risks):
         st.plotly_chart(fig_severity, use_container_width=True)
 
     with col2:
-        # Risks per goal
+        # Risks per goal - Bar chart with range slider
         goal_counts = risk_df['goal'].value_counts()
-        fig_goals = go.Figure(data=[
-            go.Pie(
-                labels=goal_counts.index,
-                values=goal_counts.values,
-                hole=.3
-            )
-        ])
+        fig_goals = go.Figure()
+        
+        # Add the bar chart
+        fig_goals.add_trace(go.Bar(
+            x=goal_counts.index,
+            y=goal_counts.values,
+            text=goal_counts.values,  # Add text labels
+            textposition='auto',      # Automatically position labels
+        ))
+        
         fig_goals.update_layout(
-            title="Risker per Mål"
+            title="Risker per Mål",
+            xaxis_title="Mål",
+            yaxis_title="Antal Risker",
+            showlegend=False,
+            # Add range slider
+            xaxis=dict(
+                rangeslider=dict(visible=True),
+                type='category',  # This ensures proper spacing for categorical data
+                tickangle=-45    # Rotate labels
+            ),
+            # Adjust margins to accommodate rotated labels
+            margin=dict(b=100),
+            # Add buttons for zoom options
+            updatemenus=[dict(
+                type="buttons",
+                showactive=False,
+                # buttons=[
+                #     dict(label="Reset View",
+                #          method="relayout",
+                #          args=[{"xaxis.range": [None, None]}])
+                # ],
+                x=0.05,  # Position of reset button
+                y=1.15   # Position of reset button
+            )]
         )
+        
         st.plotly_chart(fig_goals, use_container_width=True)
 
     # Risk Matrix Heatmap showing number of risks at each position
