@@ -2,6 +2,7 @@ import streamlit as st
 from database import get_database, clear_all_collections, clear_specific_collection
 import pandas as pd
 from Data import save_data
+from auth import require_auth, create_user, init_auth
 
 def validate_csv_data(df, collection_type):
     """Validate uploaded CSV data based on collection type"""
@@ -76,11 +77,14 @@ def import_csv_to_mongodb(df, collection_name):
     except Exception as e:
         return False, f"Error importing data: {str(e)}"
 
+@require_auth(role='admin')
 def admin_panel():
+    """Admin panel function - only accessible to authenticated admin users"""
+    # Authentication check is handled by the decorator
     st.title("Admin Panel")
     
     # Create tabs for different admin functions
-    tab1, tab2, tab3 = st.tabs(["Clear Data", "Import/Export", "Database Stats"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Clear Data", "Import/Export", "Database Stats", "User Management"])
     
     with tab1:
         st.header("Clear Data")
@@ -188,4 +192,35 @@ def admin_panel():
                 st.metric(f"{collection.capitalize()} Count", count)
             
         except Exception as e:
-            st.error(f"Error getting database statistics: {str(e)}") 
+            st.error(f"Error getting database statistics: {str(e)}")
+    
+    with tab4:
+        st.header("User Management")
+        
+        # Create new user section
+        st.subheader("Create New User")
+        with st.form("create_user_form"):
+            new_username = st.text_input("Username")
+            new_password = st.text_input("Password", type="password")
+            role = st.selectbox("Role", ["user", "admin"])
+            
+            if st.form_submit_button("Create User"):
+                if new_username and new_password:
+                    success, message = create_user(new_username, new_password, role)
+                    if success:
+                        st.success(message)
+                    else:
+                        st.error(message)
+                else:
+                    st.error("Please fill in all fields")
+        
+        # Display users
+        st.subheader("Existing Users")
+        db = get_database()
+        users = list(db.users.find({}, {'password': 0}))  # Exclude password from display
+        if users:
+            user_df = pd.DataFrame(users)
+            user_df = user_df.drop('_id', axis=1)
+            st.dataframe(user_df)
+        else:
+            st.info("No users found") 
