@@ -1,9 +1,8 @@
 from pymongo import MongoClient
-from config import MONGODB_URI, DB_NAME
-import pandas as pd
 import streamlit as st
 import sys
 import dns.resolver
+from config import get_mongodb_config
 
 @st.cache_resource(ttl=3600)  # Cache for 1 hour
 def get_database():
@@ -11,7 +10,15 @@ def get_database():
     try:
         print("\n=== Starting MongoDB Connection Process ===")
         print(f"Python version: {sys.version}")
-        print(f"MongoDB URI (masked): {MONGODB_URI.replace(MONGODB_URI.split('@')[0], '***')}")
+        
+        # Get MongoDB configuration
+        mongodb_config = get_mongodb_config()
+        MONGODB_URI = mongodb_config['uri']
+        DB_NAME = mongodb_config['db_name']
+        
+        # Mask URI for logging
+        masked_uri = MONGODB_URI.replace(MONGODB_URI.split('@')[0], '***')
+        print(f"MongoDB URI (masked): {masked_uri}")
         print(f"Target database: {DB_NAME}")
         
         # Configure DNS resolver
@@ -32,7 +39,6 @@ def get_database():
         print("✓ Client created successfully")
         
         print("\nStep 2: Testing connection...")
-        # Force connection attempt
         client.server_info()
         print("✓ Connection test successful")
         
@@ -40,7 +46,6 @@ def get_database():
         db = client[DB_NAME]
         print(f"✓ Database '{DB_NAME}' accessed")
         
-        # st.success("You successfully connected to MongoDB!")
         print("\n=== MongoDB Connection Successful ===\n")
         
         return db
@@ -54,16 +59,17 @@ def get_database():
         # Try different DNS resolution methods
         try:
             print("\nTrying alternative DNS resolution methods:")
+            hostname = MONGODB_URI.split('@')[1].split('/')[0]
             
             print("\n1. Using dns.resolver:")
             resolver = dns.resolver.Resolver()
             resolver.nameservers = ['8.8.8.8', '8.8.4.4']
-            answers = resolver.resolve('plannertolldb.dd28f.mongodb.net', 'A')
+            answers = resolver.resolve(hostname, 'A')
             print(f"DNS Resolution successful: {[rdata.address for rdata in answers]}")
             
             print("\n2. Using socket.getaddrinfo:")
             import socket
-            addrinfo = socket.getaddrinfo('plannertolldb.dd28f.mongodb.net', 27017)
+            addrinfo = socket.getaddrinfo(hostname, 27017)
             print(f"Address info: {addrinfo}")
             
         except Exception as dns_error:

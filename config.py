@@ -1,17 +1,12 @@
-import os
-from dotenv import load_dotenv
+import streamlit as st
 
-# Load environment variables from .env file if it exists
-load_dotenv()
-
-# MongoDB configuration
-MONGODB_URI = (
-    "mongodb+srv://mondoofsweden:2ahCdag8SItUVxbc@plannertolldb.dd28f.mongodb.net/?retryWrites=true&w=majority"
-)
-DB_NAME = os.getenv('DB_NAME') or 'planner_tool'
-
-# Collections
-GOALS_COLLECTION = 'goals'
-TECHNICAL_NEEDS_COLLECTION = 'technical_needs'
-BUGS_COLLECTION = 'bugs'
-HISTORY_COLLECTION = 'history' 
+def get_mongodb_config():
+    """Get MongoDB configuration from Streamlit secrets"""
+    try:
+        return {
+            'uri': st.secrets.mongodb.uri,
+            'db_name': st.secrets.mongodb.db_name
+        }
+    except Exception as e:
+        st.error(f"Failed to load MongoDB configuration: {str(e)}")
+        raise 
