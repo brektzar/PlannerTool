@@ -6,3 +6,5 @@
 /PlannerTool-2024-12-21_20-47.zip
 .streamlit/secrets.toml
 /.env
+/.idea
+/.codebuddy
