@@ -511,13 +511,13 @@ def main_app():
                                                 })
 
                                             if st.checkbox("**Tid och Kostnad**", key=f"edit_cost_{task['Task_Name']}"):
-                                                column1, column2 = st.columns(2)
-                                                with column1:
-                                                    est_time = st.number_input("**Tid (timmar)**",
+                                                # column1, column2 = st.columns(2)
+                                                
+                                                est_time = st.number_input("**Tid (timmar)**",
                                                                                value=task['Task_Estimated_Time'],
                                                                                min_value=0)
-                                                with column2:
-                                                    est_cost = st.number_input("**Kostnad**",
+                                                
+                                                est_cost = st.number_input("**Kostnad**",
                                                                                value=task['Task_Estimated_Cost'],
                                                                                min_value=0.0, step=100.0)
                                                 edited_task.update({
