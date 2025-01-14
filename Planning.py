@@ -3,7 +3,7 @@ import pandas as pd
 from Data import validate_dates, convert_rental_info, WEATHER_CONDITIONS
 from datetime import datetime
 from database import get_database
-from logging import log_action
+from custom_logging import log_action
 
 # Emojis som används i programmet:
 # 📋 : Uppgift

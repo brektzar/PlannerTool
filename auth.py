@@ -2,7 +2,7 @@ import streamlit as st
 from database import get_database
 import bcrypt
 from datetime import datetime, timedelta
-from logging import log_action
+from custom_logging import log_action
 
 
 def init_auth():

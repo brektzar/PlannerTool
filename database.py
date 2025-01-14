@@ -3,6 +3,7 @@ import streamlit as st
 import sys
 import dns.resolver
 from config import get_mongodb_config
+from custom_logging import log_action
 
 @st.cache_resource(ttl=3600)  # Cache for 1 hour
 def get_database():

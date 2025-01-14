@@ -4,7 +4,7 @@ import sys
 import pandas as pd
 import plotly.express as px
 from auth import init_auth, show_login_page, logout
-from logging import log_action
+from custom_logging import log_action
 
 # Importerat från andra filer
 from Data import (load_data, save_data, get_technical_needs_list,
