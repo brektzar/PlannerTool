@@ -318,8 +318,8 @@ def bug_tracking_tab():
                     'date_reported': [datetime.now().strftime("%Y-%m-%d")],
                     'status': ['Ej Fixad']
                 })
-                if bug['bug_title'] == None:
-                    bug['bug_title'] = "No Title"
+                if new_bug['bug_title'] == None:
+                    new_bug['bug_title'] = "No Title"
                 else:
                     pass
                 bugs_df = pd.concat([bugs_df, new_bug], ignore_index=True)
