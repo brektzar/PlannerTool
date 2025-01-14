@@ -334,7 +334,11 @@ def bug_tracking_tab():
     st.subheader("Rapporterade Buggar")
     if not bugs_df.empty:
         for idx, bug in bugs_df.iterrows():
-            with st.expander(f"{bug['location']} - {bug['date_reported']}"):
+            
+            # Select the icon based on the bug status
+            icon = "✔️" if bug['status'] == 'Fixad' else "❌"
+            
+            with st.expander(f"{icon} {bug['location']} - {bug['date_reported']}"):
                 st.write(f"**Beskrivning:** {bug['description']}")
                 st.write(f"**Status:** {bug['status']}")
                 
