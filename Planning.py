@@ -339,7 +339,7 @@ def bug_tracking_tab():
             
             # Select the icon based on the bug status
             icon = "✔️" if bug['status'] == 'Fixad' else "❌"
-            if bug['bug_title'] == null:
+            if bug['bug_title'] == None:
                 bug['bug_title'] = "No Title"
             else:
                 pass
