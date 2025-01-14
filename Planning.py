@@ -339,6 +339,10 @@ def bug_tracking_tab():
             
             # Select the icon based on the bug status
             icon = "✔️" if bug['status'] == 'Fixad' else "❌"
+            if bug['bug_title'] == null:
+                bug['bug_title'] = "No Title"
+            else:
+                pass
             
             with st.expander(f"{icon} {bug['bug_title']} rapporterad i {bug['location']} - {bug['date_reported']}"):
                 st.write(f"**Beskrivning:** {bug['description']}")
