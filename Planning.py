@@ -305,7 +305,7 @@ def bug_tracking_tab():
     with col1:
         # Bug reporting form
         with st.form("bug_report_form"):
-            bug_title = st.text_area("Titel", max_chars=20, height=40)
+            bug_title = st.text_input("Titel", max_chars=20)
             description = st.text_area("Beskrivning av buggen", height=100)
             location = st.selectbox("Var finns buggen?", options=get_all_locations())
             submit_bug = st.form_submit_button("Rapportera Bug")
