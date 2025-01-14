@@ -11,6 +11,7 @@ def log_action(action, description, location):
     :param location: Var handlingen inträffade (kan vara en modul eller funktion).
     """
     try:
+        logs_df = load_logs()  # Ladda befintliga loggar
         from database import get_database  # Import inuti funktionen för att undvika cirkulära importer
         db = get_database()
 
@@ -27,9 +28,9 @@ def log_action(action, description, location):
 
         # Lägg till loggen i databasen
         db.logs.insert_one(log_entry)
-        print(f"Log saved: {log_entry}")
+        print(f"Log saved successfully: {log_entry}")
     except Exception as e:
-        print(f"Error logging action: {e}")
+        print(f"Error saving data to MongoDB: {e}")
 
 def load_logs():
     """
@@ -38,10 +39,17 @@ def load_logs():
     :return: DataFrame med loggar.
     """
     try:
+        from database import get_database  # Import inuti funktionen för att undvika cirkulära importer
         db = get_database()
+
+        # Hämta loggar från databasen
         logs = list(db.logs.find({}, {'_id': 0}))
+        
+        # Om det inte finns några loggar, returnera en tom DataFrame med rätt kolumner
         if not logs:
             return pd.DataFrame(columns=['action', 'description', 'location', 'timestamp'])
+        
+        # Skapa en DataFrame från loggarna
         return pd.DataFrame(logs)
     except Exception as e:
         print(f"Error loading logs from MongoDB: {e}")
