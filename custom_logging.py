@@ -1,9 +1,9 @@
 import datetime
 import streamlit as st
-from database import get_database
 import pandas as pd
 
 def log_action(action, description, location):
+    from database import get_database
     """
     Loggar en användarhandling och sparar den i databasen.
 
