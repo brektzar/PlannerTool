@@ -208,7 +208,7 @@ def analyze_work_hours(dataframe):
 
     # Resursallokering per mål
     goal_resources = tasks.groupby('Goal_Name').agg({
-        'Task_Personnel_Count': 'sum',
+        'Task_Personnel_Count': 'max',
         'Task_Estimated_Time': 'sum'
     }).reset_index()
 
