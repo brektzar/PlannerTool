@@ -318,7 +318,7 @@ def bug_tracking_tab():
                     'date_reported': [datetime.now().strftime("%Y-%m-%d")],
                     'status': ['Ej Fixad']
                 })
-                if new_bug['bug_title'] == None:
+                if new_bug['bug_title'] == "":
                     new_bug['bug_title'] = "No Title"
                 else:
                     pass
