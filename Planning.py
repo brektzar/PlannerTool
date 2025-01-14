@@ -3,8 +3,8 @@ import pandas as pd
 from Data import validate_dates, convert_rental_info, WEATHER_CONDITIONS
 from datetime import datetime
 from database import get_database
+from logging import log_action
 
-# """
 # Emojis som används i programmet:
 # 📋 : Uppgift
 # 📅 :
@@ -27,7 +27,6 @@ from database import get_database
 # ⌚ : Arbetstid
 # 🐛 : Rapportera Buggar
 # 🛑 : Inget Ännu
-# """
 
 
 def add_goal(dataframe, goal_name, goal_description, goal_dates):
@@ -326,6 +325,7 @@ def bug_tracking_tab():
 
                 bugs_df = pd.concat([bugs_df, new_bug], ignore_index=True)
                 save_bugs(bugs_df)
+                log_action("Bug Rapporterad", f"Buggen '{bug_title}' rapporterades av {st.session_state.username}", location)
                 st.success("Bug rapporterad!")
                 st.rerun()
     
