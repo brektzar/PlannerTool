@@ -298,6 +298,11 @@ def bug_tracking_tab():
 
     # Load existing bugs
     bugs_df = load_bugs()
+    for bug in bugs_df:
+        if bug['bug_title'] == "":
+            bug['bug_title'] = "No Title"
+        else:
+            pass
 
     # Create two columns for the layout
     col1, col2 = st.columns([2, 1])
@@ -318,10 +323,7 @@ def bug_tracking_tab():
                     'date_reported': [datetime.now().strftime("%Y-%m-%d")],
                     'status': ['Ej Fixad']
                 })
-                if new_bug['bug_title'] == "":
-                    new_bug['bug_title'] = "No Title"
-                else:
-                    pass
+
                 bugs_df = pd.concat([bugs_df, new_bug], ignore_index=True)
                 save_bugs(bugs_df)
                 st.success("Bug rapporterad!")
