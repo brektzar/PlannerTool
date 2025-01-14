@@ -278,7 +278,7 @@ def get_all_locations():
         "Riskbedömning",
         "Översikt",
         "Hantera Tekniska Behov",
-        "Rapportera Buggar",
+        " Buggar",
         "Gantt Schema",
         "Kostnadsanalys",
         "Arbetstid",
@@ -305,12 +305,14 @@ def bug_tracking_tab():
     with col1:
         # Bug reporting form
         with st.form("bug_report_form"):
+            bug_title = st.text_area("Titel", max_chars=20, height=40)
             description = st.text_area("Beskrivning av buggen", height=100)
             location = st.selectbox("Var finns buggen?", options=get_all_locations())
             submit_bug = st.form_submit_button("Rapportera Bug")
 
             if submit_bug and description:
                 new_bug = pd.DataFrame({
+                    'bug_title': [bug_title],
                     'description': [description],
                     'location': [location],
                     'date_reported': [datetime.now().strftime("%Y-%m-%d")],
@@ -338,7 +340,7 @@ def bug_tracking_tab():
             # Select the icon based on the bug status
             icon = "✔️" if bug['status'] == 'Fixad' else "❌"
             
-            with st.expander(f"{icon} {bug['location']} - {bug['date_reported']}"):
+            with st.expander(f"{icon} {bug['bug_title']} rapporterad i {bug['location']} - {bug['date_reported']}"):
                 st.write(f"**Beskrivning:** {bug['description']}")
                 st.write(f"**Status:** {bug['status']}")
                 
