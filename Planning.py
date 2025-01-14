@@ -252,11 +252,11 @@ def load_bugs():
         db = get_database()
         bugs = list(db.bugs.find({}, {'_id': 0}))
         if not bugs:
-            return pd.DataFrame(columns=['description', 'location', 'date_reported', 'status'])
+            return pd.DataFrame(columns=['bug_title','description', 'location', 'date_reported', 'status'])
         return pd.DataFrame(bugs)
     except Exception as e:
         print(f"Error loading bugs from MongoDB: {e}")
-        return pd.DataFrame(columns=['description', 'location', 'date_reported', 'status'])
+        return pd.DataFrame(columns=['bug_title','description', 'location', 'date_reported', 'status'])
 
 def save_bugs(bugs_df):
     try:
