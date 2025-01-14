@@ -259,12 +259,6 @@ def load_bugs():
         return pd.DataFrame(columns=['bug_title','description', 'location', 'date_reported', 'status'])
 
 def save_bugs(bugs_df):
-    for bug in bugs_df:
-        if bug['bug_title'] == None:
-                    bug['bug_title'] = "No Title"
-        else:
-            pass
-    
     try:
         db = get_database()
         # Convert DataFrame to records
@@ -324,6 +318,10 @@ def bug_tracking_tab():
                     'date_reported': [datetime.now().strftime("%Y-%m-%d")],
                     'status': ['Ej Fixad']
                 })
+                if bug['bug_title'] == None:
+                    bug['bug_title'] = "No Title"
+                else:
+                    pass
                 bugs_df = pd.concat([bugs_df, new_bug], ignore_index=True)
                 save_bugs(bugs_df)
                 st.success("Bug rapporterad!")
