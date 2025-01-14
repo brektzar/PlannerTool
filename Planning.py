@@ -259,6 +259,12 @@ def load_bugs():
         return pd.DataFrame(columns=['bug_title','description', 'location', 'date_reported', 'status'])
 
 def save_bugs(bugs_df):
+    for bug in bugs_df:
+        if bug['bug_title'] == None:
+                    bug['bug_title'] = "No Title"
+        else:
+            pass
+    
     try:
         db = get_database()
         # Convert DataFrame to records
@@ -305,7 +311,7 @@ def bug_tracking_tab():
     with col1:
         # Bug reporting form
         with st.form("bug_report_form"):
-            bug_title = st.text_input("Titel", max_chars=20)
+            bug_title = st.text_input("Titel", max_chars=50)
             description = st.text_area("Beskrivning av buggen", height=100)
             location = st.selectbox("Var finns buggen?", options=get_all_locations())
             submit_bug = st.form_submit_button("Rapportera Bug")
@@ -339,10 +345,6 @@ def bug_tracking_tab():
             
             # Select the icon based on the bug status
             icon = "✔️" if bug['status'] == 'Fixad' else "❌"
-            if bug['bug_title'] == None:
-                bug['bug_title'] = "No Title"
-            else:
-                pass
             
             with st.expander(f"{icon} {bug['bug_title']} rapporterad i {bug['location']} - {bug['date_reported']}"):
                 st.write(f"**Beskrivning:** {bug['description']}")
