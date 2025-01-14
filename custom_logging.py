@@ -2,6 +2,26 @@ import datetime
 import streamlit as st
 import pandas as pd
 
+
+def initialize_logs_collection():
+    """
+    Kontrollerar om samlingen 'logs' existerar och skapar den om den saknas.
+    """
+    try:
+        from database import get_database
+        db = get_database()
+
+        # Kontrollera om samlingen existerar
+        if "logs" not in db.list_collection_names():
+            print("Logs collection does not exist. Creating it now.")
+            db.create_collection("logs")
+            # Eventuellt kan du sätta en indexering här för bättre prestanda.
+            db.logs.create_index([("timestamp", pymongo.ASCENDING)])
+            print("Logs collection created successfully.")
+    except Exception as e:
+        print(f"Error initializing logs collection: {e}")
+
+
 def log_action(action, description, location):
     """
     Loggar en användarhandling och sparar den i databasen.
@@ -14,6 +34,9 @@ def log_action(action, description, location):
         logs_df = load_logs()  # Ladda befintliga loggar
         from database import get_database  # Import inuti funktionen för att undvika cirkulära importer
         db = get_database()
+
+        # Kontrollera och initiera samlingen 'logs' om den saknas
+        initialize_logs_collection()
 
         # Kontrollera att databasen och loggen är korrekt konfigurerade
         if not hasattr(db, "logs"):
