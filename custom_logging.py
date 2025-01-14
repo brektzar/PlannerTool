@@ -3,7 +3,6 @@ import streamlit as st
 import pandas as pd
 
 def log_action(action, description, location):
-    from database import get_database
     """
     Loggar en användarhandling och sparar den i databasen.
 
@@ -12,14 +11,23 @@ def log_action(action, description, location):
     :param location: Var handlingen inträffade (kan vara en modul eller funktion).
     """
     try:
+        from database import get_database  # Import inuti funktionen för att undvika cirkulära importer
         db = get_database()
+
+        # Kontrollera att databasen och loggen är korrekt konfigurerade
+        if not hasattr(db, "logs"):
+            raise AttributeError("Database object does not have a 'logs' attribute")
+
         log_entry = {
             'action': action,
             'description': description,
             'location': location,
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
+
+        # Lägg till loggen i databasen
         db.logs.insert_one(log_entry)
+        print(f"Log saved: {log_entry}")
     except Exception as e:
         print(f"Error logging action: {e}")
 
