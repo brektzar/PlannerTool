@@ -31,6 +31,7 @@ def log_action(action, description, location):
     :param location: Var handlingen inträffade (kan vara en modul eller funktion).
     """
     try:
+        print("Trying to save logs")
         logs_df = load_logs()  # Ladda befintliga loggar
         from database import get_database  # Import inuti funktionen för att undvika cirkulära importer
         db = get_database()
