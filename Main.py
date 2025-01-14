@@ -330,7 +330,7 @@ def main_app():
                                                        key="est_cost")
 
                         with col4:
-                            personnel_count = st.slider("Personal som Behövs", 1, 50, 1, key="personnel")
+                            personnel_count = st.slider("Personal som Behövs", 1, 7, 1, key="personnel")
                             tech_needs = st.multiselect("Tekniska Behov", options=get_technical_needs_list(),
                                                         key="tech_needs")
                             weather_conditions_selected = st.multiselect("Väderförhållanden",
