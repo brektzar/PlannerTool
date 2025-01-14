@@ -298,7 +298,7 @@ def bug_tracking_tab():
 
     # Load existing bugs
     bugs_df = load_bugs()
-    for bug in bugs_df:
+    for idx, bug in bugs_df.iterrows():
         if bug['bug_title'] == "":
             bug['bug_title'] = "No Title"
         else:
