@@ -106,6 +106,7 @@ def get_logs_by_action():
     ]
 
     try:
+        from database import get_database
         db = get_database()
         logs_collection = db.logs
 
