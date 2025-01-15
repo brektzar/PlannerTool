@@ -119,5 +119,9 @@ def compare_and_log_changes(df, edited_data):
     if changes_made:
         for change in changes_made:
             log_action("update", 
-                       f"{st.session_state.username} ändrade uppgiften {change['column']} \nför rad {change['index']} \nfrån {change['old_value']} \ntill {change['new_value']}\n", "Planering/Redigera Mål och Uppgifter")
+                       (f"{st.session_state.username} ändrade uppgiften {change['column']} \n"
+                       f"för rad {change['index']} \n"
+                       f"från {change['old_value']} \n"
+                       f"till {change['new_value']}\n", 
+                       "Planering/Redigera Mål och Uppgifter"))
     return changes_made
