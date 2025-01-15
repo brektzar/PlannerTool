@@ -10,9 +10,10 @@ def current_time():
     
     # Hämta aktuell tid med rätt tidszon
     stockholm_time = datetime.now(timezone)
- 
-    # Konvertera till ISO 8601-format som MongoDB kan hantera
-    return stockholm_time.isoformat()
+
+    formatted_time = stockholm_time.strftime("Datum: %Y-%m-%d Tid: %H:%M:%S")
+    
+    return formatted_time  # Return as a datetime object
 
 
 # DataFrame structure
