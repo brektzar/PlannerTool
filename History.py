@@ -31,7 +31,7 @@ def save_year_to_history(current_data):
         
         # Add year and timestamp information
         data_to_save['Archive_Year'] = datetime.now().year
-        data_to_save['Archive_Date'] = current_time
+        data_to_save['Archive_Date'] = current_time()
         
         # Convert DataFrame to records
         records = data_to_save.to_dict('records')

@@ -52,7 +52,7 @@ def log_action(action, description, location):
             'action': action,
             'description': description,
             'location': location,
-            'timestamp': current_time
+            'timestamp': current_time()
         }
 
         # Lägg till loggen i databasen

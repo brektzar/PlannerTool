@@ -337,7 +337,7 @@ def bug_tracking_tab():
                     'bug_title': [bug_title],
                     'description': [description],
                     'location': [location],
-                    'date_reported': [current_time],
+                    'date_reported': [current_time()],
                     'status': ['Ej Fixad']
                 })
 
