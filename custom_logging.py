@@ -119,10 +119,15 @@ def get_logs_by_action():
         logs_by_action = {}
         for group in logs_collection.aggregate(pipeline):
             logs_by_action[group["_id"]] = group["logs"]
+        
+        success = f"Hämtar loggar!"
+        os.write(1, success.encode())
 
         return logs_by_action
 
     except Exception as e:
+        error_h = f"Error fetching logs by action with aggregation: {e}"
+        os.write(1, error_h.encode())
         print(f"Error fetching logs by action with aggregation: {e}")
         return {}
 
