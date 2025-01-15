@@ -4,6 +4,7 @@ from Data import validate_dates, convert_rental_info, WEATHER_CONDITIONS
 from datetime import datetime
 from database import get_database
 from custom_logging import log_action
+import os
 
 # Emojis som används i programmet:
 # 📋 : Uppgift
@@ -359,10 +360,12 @@ def bug_tracking_tab():
                     key=f"bug_{idx}"
                 )
                 print("Showing existing bugs!")
+                os.write(1,b'Showing existing bugs!\n')
                 
                 if new_status != (current_status == 'Fixad'):
                     bugs_df.at[idx, 'status'] = 'Fixad' if new_status else 'Ej Fixad'
                     print("Should try to log this now")
+                    os.write(1,b'Should try to log this now\n')
                     if bug['status'] == 'Fixad':
                         log_action("Bug åter ej fixad!", f"Buggen '{bug['bug_title']}' ändrades av {st.session_state.username}", location)
                     else:
