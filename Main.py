@@ -1,5 +1,5 @@
 import streamlit as st
-import datetime
+from datetime import datetime, timedelta
 from Data import current_time
 import pytz
 import sys
@@ -286,8 +286,8 @@ def main_app():
                     goal_description = st.text_area("Målbeskrivning", key="goal_desc")
                     goal_dates = st.date_input(
                         "Målets Varaktighet",
-                        value=(datetime.datetime.now(), datetime.datetime.now() + datetime.timedelta(days=30)),
-                        min_value=datetime.datetime.now()
+                        value=(datetime.now(), datetime.now() + timedelta(days=30)),
+                        min_value=datetime.now()
                     )
 
                     submit_goal = st.form_submit_button("Lägg till Mål")
@@ -321,8 +321,8 @@ def main_app():
                         task_description = st.text_area("Uppgiftsbeskrivning", key="task_desc")
                         task_dates = st.date_input(
                             "Uppgiftens Varaktighet",
-                            value=(datetime.datetime.now(), datetime.datetime.now() + datetime.timedelta(days=7)),
-                            min_value=datetime.datetime.now(),
+                            value=(datetime.now(), datetime.now() + timedelta(days=7)),
+                            min_value=datetime.now(),
                             key="task_dates"
                         )
 
