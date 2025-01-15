@@ -31,9 +31,7 @@ def log_action(action, description, location):
     :param description: Detaljerad beskrivning av handlingen.
     :param location: Var handlingen inträffade (kan vara en modul eller funktion).
     """
-    log_print_fail = (f"Error saving data to MongoDB: {e}")
-    lpf = str.encode(log_print_fail)
-    
+   
     
     try:
         print("Trying to save logs")
