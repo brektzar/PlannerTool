@@ -121,7 +121,6 @@ def get_logs_by_action():
         logs_by_action = {}
         for group in logs_collection.aggregate(pipeline):
             logs_by_action[group["_id"]] = group["logs"]
-            os.write(1, group.encode())
 
         st.write(f"Totalt {len(logs_by_action)} actions grupperades.")
         
@@ -138,9 +137,9 @@ def get_logs_by_action():
         return logs_by_action
 
     except Exception as e:
-        error_h = f"Error fetching logs by action with aggregation: {e}"
+        error_h = f"Error fetching logs by action:\n {e}"
         os.write(1, error_h.encode())
-        print(f"Error fetching logs by action with aggregation: {e}")
+        print(f"Error fetching logs by action:\n {e}")
         return {}
 
 
