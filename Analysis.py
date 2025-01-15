@@ -35,6 +35,8 @@ Emoji-förklaring för användargränssnittet:
 # Stänger av varningar för kedjade tilldelningar i pandas
 pd.options.mode.chained_assignment = None
 
+pd.set_option('future.no_silent_downcasting', True)
+
 
 def create_cost_analysis(dataframe):
     tasks = dataframe[dataframe["Type"] == "Task"]
@@ -127,10 +129,9 @@ def create_gantt_charts(dataframe):
 
         # Skapa Gantt-schema för målöversikt
         try:
-            with pd.option_context('future.no_silent_downcasting', True):
-                goals_data = goals[["Goal_Name", "Goal_Start_Date", "Goal_End_Date", "Goal_Completed"]]
-                goals_data.columns = ["Goal", "Start", "Finish", "Completed"]
-                goals_data['Completed'] = goals_data['Completed'].fillna(False)
+            goals_data = goals[["Goal_Name", "Goal_Start_Date", "Goal_End_Date", "Goal_Completed"]]
+            goals_data.columns = ["Goal", "Start", "Finish", "Completed"]
+            goals_data['Completed'] = goals_data['Completed'].fillna(False).infer_objects(copy=False)
 
             overview_fig = px.timeline(
                 goals_data,
@@ -188,6 +189,52 @@ def create_gantt_charts(dataframe):
         return gantt_figures
 
 
+def calculate_complexity(tasks):
+    # Normalisera värden till en skala mellan 0-1
+    def normalize(series):
+        min_val = series.min()
+        max_val = series.max()
+        if max_val == min_val:
+            return series.map(lambda x: 1)
+        return (series - min_val) / (max_val - min_val)
+
+    # Räkna antal tekniska behov/redskap för varje uppgift
+    tasks['tools_count'] = tasks['Task_Technical_Needs'].map(
+        lambda x: 0 if x == 'No data' else len(str(x).split(','))
+    )
+
+    # Basera komplexitet på flera faktorer
+    complexity_factors = {
+        'time_factor': normalize(tasks['Task_Estimated_Time']),
+        'personnel_factor': normalize(tasks['Task_Personnel_Count']),
+        'cost_factor': normalize(tasks['Task_Estimated_Cost']),
+        'rental_factor': normalize(tasks['Task_Total_Rental_Cost']),
+        'weather_factor': tasks['Task_Weather_Conditions'].map(
+            lambda x: 0.5 if x == 'No data' else len(str(x).split(',')) / 4
+        ),
+        'tools_factor': normalize(tasks['tools_count'])  # Ny faktor för redskap
+    }
+    
+    # Uppdaterade vikter med tools_factor
+    weights = {
+        'time_factor': 0.25,        # Minskad från 0.3
+        'personnel_factor': 0.20,   # Minskad från 0.25
+        'cost_factor': 0.15,        # Minskad från 0.2
+        'rental_factor': 0.15,      # Oförändrad
+        'weather_factor': 0.1,      # Oförändrad
+        'tools_factor': 0.15        # Ny vikt för redskap
+    }
+    
+    # Beräkna viktad komplexitet
+    total_complexity = sum(
+        complexity_factors[factor] * weight 
+        for factor, weight in weights.items()
+    )
+    
+    # Normalisera till en 1-10 skala för enklare tolkning
+    return (total_complexity * 9) + 1
+
+
 def analyze_work_hours(dataframe):
     tasks = dataframe[dataframe["Type"] == "Task"]
 
@@ -233,7 +280,7 @@ def analyze_work_hours(dataframe):
     )
 
     # Analys av uppgiftskomplexitet
-    tasks['Complexity_Score'] = tasks['Task_Estimated_Time'] * tasks['Task_Personnel_Count']
+    tasks['Complexity_Score'] = calculate_complexity(tasks)
     fig_complexity = px.bar(
         tasks.sort_values('Complexity_Score', ascending=False),
         x='Task_Name',
@@ -349,8 +396,7 @@ def create_completion_analysis(dataframe):
                               "x": 0.5, "y": 0.5, "showarrow": False}]
             )]
 
-        with pd.option_context('future.no_silent_downcasting', True):
-            goal_completion = goals['Goal_Completed'].fillna(False).value_counts()
+        goal_completion = goals['Goal_Completed'].fillna(False).infer_objects(copy=False).value_counts()
 
         fig_goals = go.Figure(data=[
             go.Pie(
@@ -377,13 +423,7 @@ def create_completion_analysis(dataframe):
         # Statistisk över uppgiftsstatus
         tasks = dataframe[dataframe['Type'] == 'Task']
         if not tasks.empty:
-            ####Confirmed working but get futurewarning!!!############################################
-            task_completion = tasks['Task_Completed'].fillna(False).value_counts()
-            ##########################################################################################
-
-            ####Hopefully fix for futurewarning!!!####################################################
-            #task_completion = tasks['Task_Completed'].result.infer_objects(copy=False).value_counts()
-            ##########################################################################################
+            task_completion = tasks['Task_Completed'].fillna(False).infer_objects(copy=False).value_counts()
 
             fig_tasks = go.Figure(data=[
                 go.Pie(
@@ -409,26 +449,18 @@ def create_completion_analysis(dataframe):
 
             # Uppgiftsstatus per mål
             try:
-                ####Confirmed working but get futurewarning!!!############################################
-                task_by_goal = pd.DataFrame({
-                    'Goal': tasks['Goal_Name'],
-                    'Status': tasks['Task_Completed'].fillna(False).map({True: 'Slutförda', False: 'Pågående'})
-                }).groupby(['Goal', 'Status']).size().unstack(fill_value=0)
-                ##########################################################################################
-
-                ####Hopefully fix for futurewarning!!!################################################
-                # Ensure 'Task_Completed' column has no missing values and proper types
-                #tasks['Task_Completed'] = tasks['Task_Completed'].result.infer_objects(copy=False)
-
-                # Map the 'Task_Completed' values to 'Slutförda' and 'Pågående'
-                #tasks['Status'] = tasks['Task_Completed'].map({True: 'Slutförda', False: 'Pågående'})
-                ######################################################################################
-
-                # Create the DataFrame and perform the groupby operation
-                task_by_goal = pd.DataFrame({
-                    'Goal': tasks['Goal_Name'],
-                    'Status': tasks['Status']
-                }).groupby(['Goal', 'Status']).size().unstack(fill_value=0)
+                # Säkerställ att Task_Completed är korrekt mappat
+                tasks['Status'] = tasks['Task_Completed'].fillna(False).infer_objects(copy=False).map({
+                    True: 'Slutförda', 
+                    False: 'Pågående'
+                })
+                
+                task_by_goal = tasks.groupby(['Goal_Name', 'Status']).size().unstack(fill_value=0)
+                
+                if 'Slutförda' not in task_by_goal.columns:
+                    task_by_goal['Slutförda'] = 0
+                if 'Pågående' not in task_by_goal.columns:
+                    task_by_goal['Pågående'] = 0
 
                 fig_by_goal = go.Figure(data=[
                     go.Bar(name='Slutförda', y=task_by_goal.index, x=task_by_goal['Slutförda'],
@@ -443,7 +475,7 @@ def create_completion_analysis(dataframe):
                     xaxis_title="Antal Uppgifter"
                 )
                 completion_figures.append(fig_by_goal)
-            except KeyError as e:
+            except Exception as e:
                 print(f"Fel vid skapande av uppgiftsstatus per mål-diagram: {str(e)}")
 
         return completion_figures

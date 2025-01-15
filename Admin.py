@@ -2,6 +2,7 @@ import streamlit as st
 from database import get_database, clear_all_collections, clear_specific_collection
 import pandas as pd
 from Data import save_data
+from datetime import datetime
 from auth import require_auth, create_user, init_auth
 from custom_logging import log_action, get_logs_by_action
 
@@ -222,11 +223,22 @@ def admin_panel():
         db = get_database()
         users = list(db.users.find({}, {'password': 0}))  # Exclude password from display
         if users:
+            # Convert MongoDB data for display
+            for user in users:
+                # Convert ObjectId to string
+                if '_id' in user:
+                    user['_id'] = str(user['_id'])
+                # Ensure last_login is a string or None
+                if 'last_login' in user and user['last_login'] is not None:
+                    if isinstance(user['last_login'], datetime):
+                        user['last_login'] = user['last_login'].isoformat()
+                    # If it's already a string, leave it as is
+            
             user_df = pd.DataFrame(users)
             user_df = user_df.drop('_id', axis=1)
             st.dataframe(user_df)
         else:
-            st.info("No users found") 
+            st.info("No users found")
 
     with tab5:
         st.header("Loggar")

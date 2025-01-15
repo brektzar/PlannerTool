@@ -33,8 +33,7 @@ def log_action(action, description, location):
     :param description: Detaljerad beskrivning av handlingen.
     :param location: Var handlingen inträffade (kan vara en modul eller funktion).
     """
-   
-    
+
     try:
         print("Trying to save logs")
         logs_df = load_logs()  # Ladda befintliga loggar
@@ -69,7 +68,8 @@ def log_action(action, description, location):
         lpf = str.encode(log_print_fail)
 
         print(f"Error saving data to MongoDB: {e}")
-        os.write(1,lpf)
+        os.write(1, lpf)
+
 
 def load_logs():
     """
@@ -83,16 +83,17 @@ def load_logs():
 
         # Hämta loggar från databasen
         logs = list(db.logs.find({}, {'_id': 0}))
-        
+
         # Om det inte finns några loggar, returnera en tom DataFrame med rätt kolumner
         if not logs:
             return pd.DataFrame(columns=['action', 'description', 'location', 'timestamp'])
-        
+
         # Skapa en DataFrame från loggarna
         return pd.DataFrame(logs)
     except Exception as e:
         print(f"Error loading logs from MongoDB: {e}")
         return pd.DataFrame(columns=['action', 'description', 'location', 'timestamp'])
+
 
 def get_logs_by_action():
     """
@@ -102,7 +103,7 @@ def get_logs_by_action():
     actions = [
         "add_goal", "add_task", "add_risk", "add_tool",
         "remove_tool", "complete_task", "complete_goal",
-        "bug_report", "bug_fixed", "bug_unfixed", "save_history", 
+        "bug_report", "bug_fixed", "bug_unfixed", "save_history",
         "Login", "Logout",
     ]
 
@@ -111,22 +112,26 @@ def get_logs_by_action():
         db = get_database()
         logs_collection = db.logs
 
-        # Aggregation pipeline för att gruppera loggar
+        # Updated pipeline to exclude _id field from the results
         pipeline = [
             {"$match": {"action": {"$in": actions}}},
-            {"$group": {"_id": "$action", "logs": {"$push": "$$ROOT"}}}
+            {"$project": {"_id": 0}},  # Exclude _id field
+            {"$group": {
+                "_id": "$action",
+                "logs": {"$push": "$$ROOT"}
+            }}
         ]
-        
+
         # Kör aggregation och skapa en ordbok
         logs_by_action = {}
         for group in logs_collection.aggregate(pipeline):
             logs_by_action[group["_id"]] = group["logs"]
 
         st.write(f"Totalt {len(logs_by_action)} actions grupperades.")
-        
+
         success = f"Hämtar loggar!"
         os.write(1, success.encode())
-        
+
         for action, logs in logs_by_action.items():
             st.write(f"Action: {action} - Antal loggar: {len(logs)}")
 
@@ -138,37 +143,6 @@ def get_logs_by_action():
         print(f"Error fetching logs by action:\n {e}")
         return {}
 
-
-    """ 
-    def get_logs_by_action(): """
-    """
-    Skapar separata listor för varje unik action i loggsamlingen.
-    Returnerar en ordbok där nycklarna är actions och värdena är listor av loggar.
-    """
-    """     
-        actions = [
-        "add_goal", "add_task", "add_risk", "add_tool",
-        "remove_tool", "complete_task", "complete_goal",
-        "bug_report", "bug_fixed", "bug_unfixed", "save_history"
-    ]
-    
-     try:
-        from database import get_database
-        db = get_database()
-        logs_collection = db.logs
-
-        # Ordbok för att lagra loggar per action
-        logs_by_action = {action: [] for action in actions}
-
-        # Hämta loggar för varje action
-        for action in actions:
-            logs_by_action[action] = list(logs_collection.find({"action": action}))
-
-        return logs_by_action
-
-    except Exception as e:
-        print(f"Error fetching logs by action: {e}")
-        return {} """
 
 def compare_and_log_changes(df, edited_data):
     changes_made = []
@@ -190,14 +164,14 @@ def compare_and_log_changes(df, edited_data):
                     "old_value": old_value,
                     "new_value": new_value
                 })
-    
+
     # Logga ändringarna om några finns
     if changes_made:
         for change in changes_made:
-            log_action("update", 
+            log_action("update",
                        (f"{st.session_state.username} ändrade uppgiften {change['column']} \n"
-                       f"för rad {change['index']} \n"
-                       f"från {change['old_value']} \n"
-                       f"till {change['new_value']}\n"), 
+                        f"för rad {change['index']} \n"
+                        f"från {change['old_value']} \n"
+                        f"till {change['new_value']}\n"),
                        "Planering/Redigera Mål och Uppgifter")
     return changes_made

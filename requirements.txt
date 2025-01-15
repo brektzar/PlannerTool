@@ -3,5 +3,5 @@ openpyxl
 streamlit
 plotly
 pymongo
-bcrypt
+bcrypt==4.0.1
 pytz
