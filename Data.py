@@ -1,7 +1,20 @@
 import pandas as pd
-import datetime
+from datetime import datetime
+import pytz
 from database import get_database
 
+
+def current_time():
+    # Hämta den aktuella tiden för Stockholm (som beaktar sommartid)
+    timezone = pytz.timezone('Europe/Stockholm')
+    
+    # Hämta aktuell tid med rätt tidszon
+    stockholm_time = datetime.now(timezone)
+    
+    # Konvertera till ISO 8601-format som MongoDB kan hantera
+    stockholm_time_str = stockholm_time.strftime('%Y-%m-%dT%H:%M:%S%z')
+    
+    return stockholm_time_str
 
 # DataFrame structure
 def create_empty_dataframe():

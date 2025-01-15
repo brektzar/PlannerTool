@@ -2,6 +2,8 @@ import streamlit as st
 from database import get_database
 import bcrypt
 from datetime import datetime, timedelta
+from data import current_time
+import pytz
 from custom_logging import log_action
 
 
@@ -36,7 +38,7 @@ def create_user(username, password, role='user'):
         'username': username,
         'password': hash_password(password),
         'role': role,
-        'created_at': datetime.utcnow(),
+        'created_at': current_time,
         'last_login': None
     }
 
@@ -56,7 +58,7 @@ def login(username, password):
         # Update last login
         db.users.update_one(
             {'username': username},
-            {'$set': {'last_login': datetime.utcnow()}}
+            {'$set': {'last_login': current_time}}
         )
 
         st.session_state.authenticated = True

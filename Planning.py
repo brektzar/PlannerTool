@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
-from Data import validate_dates, convert_rental_info, WEATHER_CONDITIONS
+from Data import validate_dates, convert_rental_info, WEATHER_CONDITIONS, current_time
 from datetime import datetime
+import pytz
 from database import get_database
 from custom_logging import log_action
 import os
@@ -336,7 +337,7 @@ def bug_tracking_tab():
                     'bug_title': [bug_title],
                     'description': [description],
                     'location': [location],
-                    'date_reported': [datetime.now().strftime("%Y-%m-%d")],
+                    'date_reported': [current_time],
                     'status': ['Ej Fixad']
                 })
 

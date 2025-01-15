@@ -3,6 +3,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from datetime import datetime
+from data import current_time
+import pytz
 from database import get_database
 
 
@@ -29,7 +31,7 @@ def save_year_to_history(current_data):
         
         # Add year and timestamp information
         data_to_save['Archive_Year'] = datetime.now().year
-        data_to_save['Archive_Date'] = datetime.now().strftime('%Y-%m-%d')
+        data_to_save['Archive_Date'] = current_time
         
         # Convert DataFrame to records
         records = data_to_save.to_dict('records')

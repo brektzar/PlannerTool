@@ -1,5 +1,6 @@
-#import datetime
 from datetime import datetime
+from data import current_time
+import pytz
 import streamlit as st
 import pandas as pd
 import os
@@ -51,7 +52,7 @@ def log_action(action, description, location):
             'action': action,
             'description': description,
             'location': location,
-            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            'timestamp': current_time
         }
 
         # Lägg till loggen i databasen
