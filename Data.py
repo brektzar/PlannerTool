@@ -183,6 +183,7 @@ def save_risk_data(risks):
         db.risks.delete_many({})
         # Insert new risks if any exist
         if risks:
+            """             
             # Convert any date objects to strings
             formatted_risks = []
             for risk in risks:
@@ -190,9 +191,9 @@ def save_risk_data(risks):
                 for key, value in risk_copy.items():
                     if isinstance(value, (datetime.date, datetime)):
                         risk_copy[key] = value.isoformat()
-                formatted_risks.append(risk_copy)
+                formatted_risks.append(risk_copy) """
             
-            db.risks.insert_many(formatted_risks)
+            db.risks.insert_many(risks)
             print(f"Saved {len(risks)} risks to database")  # Debug print
         return True
     except Exception as e:
