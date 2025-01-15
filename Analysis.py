@@ -163,7 +163,7 @@ def create_gantt_charts(dataframe):
                 ####
 
                 ####Hopefully fix for futurewarning!!!
-                gantt_data['Completed'] = gantt_data['Completed'].fillna(False).infer_objects(copy=False)
+                gantt_data['Completed'] = gantt_data['Completed'].result.infer_objects(copy=False)
                 ####
 
                 fig = px.timeline(
@@ -382,7 +382,7 @@ def create_completion_analysis(dataframe):
             ####
 
             ####Hopefully fix for futurewarning!!!
-            task_completion = tasks['Task_Completed'].fillna(False).infer_objects(copy=False).value_counts()
+            task_completion = tasks['Task_Completed'].result.infer_objects(copy=False).value_counts()
             ####
 
             fig_tasks = go.Figure(data=[
@@ -418,7 +418,7 @@ def create_completion_analysis(dataframe):
 
                 ####Hopefully fix for futurewarning!!!
                 # Ensure 'Task_Completed' column has no missing values and proper types
-                tasks['Task_Completed'] = tasks['Task_Completed'].fillna(False).infer_objects(copy=False)
+                tasks['Task_Completed'] = tasks['Task_Completed'].result.infer_objects(copy=False)
 
                 # Map the 'Task_Completed' values to 'Slutförda' and 'Pågående'
                 tasks['Status'] = tasks['Task_Completed'].map({True: 'Slutförda', False: 'Pågående'})
