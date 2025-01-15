@@ -87,7 +87,7 @@ def admin_panel():
     st.title("Admin Panel")
     
     # Create tabs for different admin functions
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Clear Data", "Import/Export", "Database Stats", "User Management", "Loggar"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Clear Data", "Import/Export", "Database Stats", "User Management", "Loggar",])
     
     with tab1:
         st.header("Clear Data")
@@ -229,7 +229,8 @@ def admin_panel():
             st.info("No users found") 
 
     with tab5:
-        st.title("Loggar per Action")
+        st.header("Loggar")
+        st.write("tillfälligt text")
 
         # Hämta loggar
         logs_by_action = get_logs_by_action()
