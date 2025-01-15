@@ -102,7 +102,8 @@ def get_logs_by_action():
     actions = [
         "add_goal", "add_task", "add_risk", "add_tool",
         "remove_tool", "complete_task", "complete_goal",
-        "bug_report", "bug_fixed", "bug_unfixed", "save_history"
+        "bug_report", "bug_fixed", "bug_unfixed", "save_history", 
+        "Login", "Logout",
     ]
 
     try:
