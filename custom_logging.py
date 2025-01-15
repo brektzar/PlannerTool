@@ -150,9 +150,9 @@ def get_logs_by_action():
         "add_goal", "add_task", "add_risk", "add_tool",
         "remove_tool", "complete_task", "complete_goal",
         "bug_report", "bug_fixed", "bug_unfixed", "save_history"
-    ] """
-
-    try:
+    ]
+    
+     try:
         from database import get_database
         db = get_database()
         logs_collection = db.logs
@@ -168,7 +168,7 @@ def get_logs_by_action():
 
     except Exception as e:
         print(f"Error fetching logs by action: {e}")
-        return {}
+        return {} """
 
 def compare_and_log_changes(df, edited_data):
     changes_made = []

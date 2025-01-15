@@ -158,13 +158,13 @@ def create_gantt_charts(dataframe):
 
                 gantt_data = goal_tasks[["Task_Name", "Task_Start_Date", "Task_End_Date", "Task_Completed"]]
                 gantt_data.columns = ["Task", "Start", "Finish", "Completed"]
-                ####Confirmed working but get futurewarning!!!
-                #gantt_data['Completed'] = gantt_data['Completed'].fillna(False)
-                ####
+                ####Confirmed working but get futurewarning!!!############################################
+                gantt_data['Completed'] = gantt_data['Completed'].fillna(False)
+                ##########################################################################################
 
-                ####Hopefully fix for futurewarning!!!
-                gantt_data['Completed'] = gantt_data['Completed'].result.infer_objects(copy=False)
-                ####
+                ####Hopefully fix for futurewarning!!!####################################################
+                #gantt_data['Completed'] = gantt_data['Completed'].result.infer_objects(copy=False)
+                ##########################################################################################
 
                 fig = px.timeline(
                     gantt_data,
@@ -377,13 +377,13 @@ def create_completion_analysis(dataframe):
         # Statistisk över uppgiftsstatus
         tasks = dataframe[dataframe['Type'] == 'Task']
         if not tasks.empty:
-            ####Confirmed working but get futurewarning!!!
-            #task_completion = tasks['Task_Completed'].fillna(False).value_counts()
-            ####
+            ####Confirmed working but get futurewarning!!!############################################
+            task_completion = tasks['Task_Completed'].fillna(False).value_counts()
+            ##########################################################################################
 
-            ####Hopefully fix for futurewarning!!!
-            task_completion = tasks['Task_Completed'].result.infer_objects(copy=False).value_counts()
-            ####
+            ####Hopefully fix for futurewarning!!!####################################################
+            #task_completion = tasks['Task_Completed'].result.infer_objects(copy=False).value_counts()
+            ##########################################################################################
 
             fig_tasks = go.Figure(data=[
                 go.Pie(
@@ -409,20 +409,20 @@ def create_completion_analysis(dataframe):
 
             # Uppgiftsstatus per mål
             try:
-                ####Confirmed working but get futurewarning!!!
-                #task_by_goal = pd.DataFrame({
-                #    'Goal': tasks['Goal_Name'],
-                #    'Status': tasks['Task_Completed'].fillna(False).map({True: 'Slutförda', False: 'Pågående'})
-                #}).groupby(['Goal', 'Status']).size().unstack(fill_value=0)
-                ####
+                ####Confirmed working but get futurewarning!!!############################################
+                task_by_goal = pd.DataFrame({
+                    'Goal': tasks['Goal_Name'],
+                    'Status': tasks['Task_Completed'].fillna(False).map({True: 'Slutförda', False: 'Pågående'})
+                }).groupby(['Goal', 'Status']).size().unstack(fill_value=0)
+                ##########################################################################################
 
-                ####Hopefully fix for futurewarning!!!
+                ####Hopefully fix for futurewarning!!!################################################
                 # Ensure 'Task_Completed' column has no missing values and proper types
-                tasks['Task_Completed'] = tasks['Task_Completed'].result.infer_objects(copy=False)
+                #tasks['Task_Completed'] = tasks['Task_Completed'].result.infer_objects(copy=False)
 
                 # Map the 'Task_Completed' values to 'Slutförda' and 'Pågående'
-                tasks['Status'] = tasks['Task_Completed'].map({True: 'Slutförda', False: 'Pågående'})
-                ####
+                #tasks['Status'] = tasks['Task_Completed'].map({True: 'Slutförda', False: 'Pågående'})
+                ######################################################################################
 
                 # Create the DataFrame and perform the groupby operation
                 task_by_goal = pd.DataFrame({
