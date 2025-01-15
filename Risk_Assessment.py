@@ -8,7 +8,7 @@ import pytz
 import plotly.graph_objects as go
 from Data import save_risk_data, load_risk_data, current_time
 from database import get_database
-from logging import log_action
+from custom_logging import log_action
 
 
 # """
