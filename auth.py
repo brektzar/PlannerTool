@@ -39,7 +39,7 @@ def create_user(username, password, role='user'):
         'username': username,
         'password': hash_password(password),
         'role': role,
-        'created_at': current_time,
+        'created_at': current_time(),
         'last_login': None
     }
 
@@ -57,11 +57,10 @@ def login(username, password):
 
     if user and verify_password(password, user['password']):
         # Update last login
-        debug_time = current_time.encode()
-        os.write(1, debug_time)
+
         db.users.update_one(
             {'username': username},
-            {'$set': {'last_login': current_time}}
+            {'$set': {'last_login': current_time()}}
         )
 
         st.session_state.authenticated = True
