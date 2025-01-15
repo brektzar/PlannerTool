@@ -52,12 +52,17 @@ def log_action(action, description, location):
         }
 
         # Lägg till loggen i databasen
+        log_print_fail = (f"Error saving data to MongoDB: {e}")
+        log_print_success = (f"Log saved successfully: {log_entry}")
+        lpf = str.encode(log_print_fail)
+        lps = str.encode(log_print_success)
+
         db.logs.insert_one(log_entry)
         print(f"Log saved successfully: {log_entry}")
-        os.write(f'Log saved successfully: {log_entry}\n')
+        os.write(1, lps)
     except Exception as e:
         print(f"Error saving data to MongoDB: {e}")
-        os.write(f'Error saving data to MongoDB: {e}\n')
+        os.write(1,lpf)
 
 def load_logs():
     """
