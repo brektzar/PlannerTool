@@ -4,7 +4,7 @@ from io import BytesIO
 import openpyxl
 from openpyxl.styles import PatternFill, Border, Side
 from datetime import datetime
-from data import current_time
+from Data import current_time
 import pytz
 import plotly.graph_objects as go
 from Data import save_risk_data, load_risk_data

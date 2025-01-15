@@ -1,6 +1,6 @@
 import streamlit as st
 import datetime
-from data import current_time
+from Data import current_time
 import pytz
 import sys
 import pandas as pd

@@ -3,7 +3,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from datetime import datetime
-from data import current_time
+from Data import current_time
 import pytz
 from database import get_database
 

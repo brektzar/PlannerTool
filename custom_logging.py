@@ -1,5 +1,5 @@
 from datetime import datetime
-from data import current_time
+from Data import current_time
 import pytz
 import streamlit as st
 import pandas as pd
