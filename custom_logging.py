@@ -129,10 +129,6 @@ def get_logs_by_action():
         
         for action, logs in logs_by_action.items():
             st.write(f"Action: {action} - Antal loggar: {len(logs)}")
-            if logs:
-                st.write(logs)  # Visar loggarna för varje action
-            else:
-                st.write(f"Inga loggar hittades för {action}.")
 
         return logs_by_action
 
