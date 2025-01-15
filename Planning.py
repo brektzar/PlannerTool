@@ -223,11 +223,12 @@ def toggle_task_completion(dataframe, goal_name, task_name):
     mask = (dataframe['Type'] == 'Task') & (dataframe['Goal_Name'] == goal_name) & (dataframe['Task_Name'] == task_name)
     if mask.any():
         
-        # Växla Task_Completed status
-        dataframe.loc[mask, 'Task_Completed'] = ~dataframe.loc[mask, 'Task_Completed']
+        # Växla Task_Completed status till boolean
+        current_status = dataframe.loc[mask, 'Task_Completed'].iloc[0]
+        new_status = not bool(current_status)  # Konvertera till boolean och växla värde
+        dataframe.loc[mask, 'Task_Completed'] = new_status
 
-        # Kontrollera den nya statusen
-        new_status = dataframe.loc[mask, 'Task_Completed'].iloc[0]
+        # Debug: Kontrollera den nya statusen
         st.write(f"New task completion status for {task_name}: {new_status}")
 
         if new_status:
