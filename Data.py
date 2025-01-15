@@ -12,9 +12,8 @@ def current_time():
     stockholm_time = datetime.now(timezone)
     stockholm_time_iso = stockholm_time.isoformat()
     # Konvertera till ISO 8601-format som MongoDB kan hantera
-    stockholm_time_str = stockholm_time_iso.strftime('%Y-%m-%dT%H:%M:%S%z')
     
-    return stockholm_time_str
+    return stockholm_time_iso
 
 # DataFrame structure
 def create_empty_dataframe():
