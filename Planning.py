@@ -231,10 +231,12 @@ def toggle_task_completion(dataframe, goal_name, task_name):
         # Debug: Kontrollera den nya statusen
         st.write(f"New task completion status for {task_name}: {new_status}")
 
-        if new_status:
+        if new_status == True:
             log_action("complete_task", f"{st.session_state.username} avslutade uppgiften: {task_name}", "Planering/Översikt")
-        else:
+        elif new_status == False:
             log_action("complete_task", f"{st.session_state.username} återupprättade uppgiften: {task_name}", "Planering/Översikt")
+        else:
+            log_action("complete_task", f"{st.session_state.username} !kan inte avgöra om klart eller ej! {task_name}", "Planering/Översikt")
 
     return dataframe
 
