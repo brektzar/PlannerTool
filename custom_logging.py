@@ -31,6 +31,11 @@ def log_action(action, description, location):
     :param description: Detaljerad beskrivning av handlingen.
     :param location: Var handlingen inträffade (kan vara en modul eller funktion).
     """
+    log_print_fail = (f"Error saving data to MongoDB: {e}")
+    log_print_success = (f"Log saved successfully: {log_entry}")
+    lpf = str.encode(log_print_fail)
+    lps = str.encode(log_print_success)
+    
     try:
         print("Trying to save logs")
         logs_df = load_logs()  # Ladda befintliga loggar
@@ -52,11 +57,6 @@ def log_action(action, description, location):
         }
 
         # Lägg till loggen i databasen
-        log_print_fail = (f"Error saving data to MongoDB: {e}")
-        log_print_success = (f"Log saved successfully: {log_entry}")
-        lpf = str.encode(log_print_fail)
-        lps = str.encode(log_print_success)
-
         db.logs.insert_one(log_entry)
         print(f"Log saved successfully: {log_entry}")
         os.write(1, lps)
