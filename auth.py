@@ -64,7 +64,7 @@ def login(username, password):
         st.session_state.username = username
         log_action("Login", f"{st.session_state.username} loggade in", "Login Screen")
         return True
-    log_action("Login", f"Misslyckat loginförsök av {user}", "Login Screen")
+    log_action("Login", f"Misslyckat loginförsök av {username}", "Login Screen")
     return False
 
 
