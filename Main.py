@@ -4,7 +4,7 @@ import sys
 import pandas as pd
 import plotly.express as px
 from auth import init_auth, show_login_page, logout
-from custom_logging import log_action
+from custom_logging import log_action, compare_and_log_changes
 
 # Importerat från andra filer
 from Data import (load_data, save_data, get_technical_needs_list,
@@ -420,21 +420,12 @@ def main_app():
 
                     if st.session_state.edited_data:  # Only show if there are changes to save
                         if st.button("Spara Ändringar"):
+                            
+                            #Logga ändringar
+                            compare_and_log_changes(session_state.df, session_state.edited_data)
+
                             st.session_state.df = update_dataframe(st.session_state.df, st.session_state.edited_data)
                             save_data(st.session_state.df)  # Save to file
-                            
-                            # Logga varje ändring
-                            for index, changes in st.session_state.edited_data.items():
-                                old_data = changes.get("old_data")
-                                new_data = changes.get("new_data")
-                                field_name = changes.get("field_name")  # Exempelvis "goal_name", "task_name" etc.
-                                
-                                # Logga varje ändring
-                                log_action(
-                                    "edit_data", 
-                                    f"{st.session_state.username} ändrade {field_name} från '{old_data}' till '{new_data}'",
-                                    "Planering/Redigera Mål och Uppgifter"
-                                )
 
                             # Clear the edited data and reset states
                             st.session_state.edited_data = {}

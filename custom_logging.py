@@ -93,3 +93,32 @@ def load_logs():
         print(f"Error loading logs from MongoDB: {e}")
         return pd.DataFrame(columns=['action', 'description', 'location', 'timestamp'])
 
+
+def compare_and_log_changes(df, edited_data):
+    changes_made = []
+
+    # Iterera över alla redigerade data
+    for index, new_data in edited_data.items():
+        # Hämta det gamla värdet från df (du kan använda indexet för att hitta motsvarande rad)
+        old_data = df.loc[index] if index in df.index else None
+
+        # Jämför varje kolumn (värde) för att se om något ändrats
+        for column in new_data:
+            old_value = old_data[column] if old_data is not None else None
+            new_value = new_data[column]
+
+            if old_value != new_value:
+                changes_made.append({
+                    "index": index,
+                    "column": column,
+                    "old_value": old_value,
+                    "new_value": new_value
+                })
+    
+    # Logga ändringarna om några finns
+    if changes_made:
+        for change in changes_made:
+            log_action("update", 
+                       f"{st.session_state.username} ändrade {change['column']} för rad {change['index']} från {change['old_value']} till {change['new_value']}", 
+                       "Planering/Redigera Mål och Uppgifter")
+    return changes_made
