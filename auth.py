@@ -57,7 +57,8 @@ def login(username, password):
 
     if user and verify_password(password, user['password']):
         # Update last login
-        os.write(1, current_time)
+        debug_time = current_time.encode()
+        os.write(1, debug_time)
         db.users.update_one(
             {'username': username},
             {'$set': {'last_login': current_time}}
