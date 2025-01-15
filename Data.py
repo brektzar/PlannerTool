@@ -136,9 +136,9 @@ def validate_dates(start_date, end_date):
     if not start_date or not end_date:
         raise ValueError("Start- och slutdatum krävs")
     if isinstance(start_date, str):
-        start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
     if isinstance(end_date, str):
-        end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
     return start_date, end_date
 
 
@@ -176,7 +176,7 @@ def save_risk_data(risks):
             for risk in risks:
                 risk_copy = risk.copy()
                 for key, value in risk_copy.items():
-                    if isinstance(value, (datetime.date, datetime.datetime)):
+                    if isinstance(value, (datetime.date, datetime)):
                         risk_copy[key] = value.isoformat()
                 formatted_risks.append(risk_copy)
             
@@ -199,10 +199,10 @@ def load_risk_data():
         # Convert date strings back to date objects
         for risk in risks:
             if 'action_date' in risk:
-                risk['action_date'] = datetime.datetime.strptime(
+                risk['action_date'] = datetime.strptime(
                     risk['action_date'], '%Y-%m-%d').date()
             if 'follow_up_date' in risk:
-                risk['follow_up_date'] = datetime.datetime.strptime(
+                risk['follow_up_date'] = datetime.strptime(
                     risk['follow_up_date'], '%Y-%m-%d').date()
         
         return risks
