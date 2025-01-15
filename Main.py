@@ -422,7 +422,7 @@ def main_app():
                         if st.button("Spara Ändringar"):
                             
                             #Logga ändringar
-                            compare_and_log_changes(session_state.df, session_state.edited_data)
+                            compare_and_log_changes(st.session_state.df, st.session_state.edited_data)
 
                             st.session_state.df = update_dataframe(st.session_state.df, st.session_state.edited_data)
                             save_data(st.session_state.df)  # Save to file
