@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 import pytz
-from database import get_database
+
 
 
 def current_time():
@@ -32,6 +32,7 @@ def create_empty_dataframe():
 # Data loading and saving functions
 def load_data():
     try:
+        from database import get_database
         db = get_database()
         data = list(db.goals.find({}, {'_id': 0}))  # Exclude MongoDB _id field
         
@@ -58,6 +59,7 @@ def load_data():
 
 def save_data(df):
     try:
+        from database import get_database
         db = get_database()
         # Convert DataFrame to dict records
         records = df.to_dict('records')
@@ -79,6 +81,7 @@ def save_data(df):
 # Technical needs management
 def load_technical_needs():
     try:
+        from database import get_database
         db = get_database()
         needs = list(db.technical_needs.find({}, {'_id': 0}))
         if not needs:
@@ -163,6 +166,7 @@ def convert_rental_info(rental_item, rental_duration, rental_cost_unit):
 def save_risk_data(risks):
     """Save risks to MongoDB"""
     try:
+        from database import get_database
         db = get_database()
         # Clear existing risks
         db.risks.delete_many({})
@@ -188,6 +192,7 @@ def save_risk_data(risks):
 def load_risk_data():
     """Load risks from MongoDB"""
     try:
+        from database import get_database
         db = get_database()
         risks = list(db.risks.find({}, {'_id': 0}))
         print(f"Loaded {len(risks)} risks from database")  # Debug print
