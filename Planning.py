@@ -358,6 +358,7 @@ def bug_tracking_tab():
                     value=current_status == 'Fixad',
                     key=f"bug_{idx}"
                 )
+                print("Showing existing bugs!")
                 
                 if new_status != (current_status == 'Fixad'):
                     bugs_df.at[idx, 'status'] = 'Fixad' if new_status else 'Ej Fixad'
