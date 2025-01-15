@@ -228,6 +228,7 @@ def toggle_task_completion(dataframe, goal_name, task_name):
 
         # Kontrollera den nya statusen
         new_status = dataframe.loc[mask, 'Task_Completed'].iloc[0]
+        st.write(f"New task completion status for {task_name}: {new_status}")
 
         if new_status:
             log_action("complete_task", f"{st.session_state.username} avslutade uppgiften: {task_name}", "Planering/Översikt")
