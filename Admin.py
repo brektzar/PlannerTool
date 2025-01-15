@@ -230,7 +230,6 @@ def admin_panel():
 
     with tab5:
         st.header("Loggar")
-        st.write("tillfälligt text")
 
         # Hämta loggar
         logs_by_action = get_logs_by_action()
@@ -250,3 +249,6 @@ def admin_panel():
                         st.dataframe(logs)
                     else:
                         st.write("Inga loggar hittades för denna action.")
+        else:
+            st.warning("Har inte lyckats sortera loggarna eller så finns det inga loggar.")
+
