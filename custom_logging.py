@@ -120,9 +120,11 @@ def get_logs_by_action():
         logs_by_action = {}
         for group in logs_collection.aggregate(pipeline):
             logs_by_action[group["_id"]] = group["logs"]
+            os.write(1, group.encode())
         
         success = f"Hämtar loggar!"
         os.write(1, success.encode())
+        
 
         return logs_by_action
 
