@@ -225,12 +225,13 @@ def toggle_task_completion(dataframe, goal_name, task_name):
         
         dataframe.loc[mask, 'Task_Completed'] = ~dataframe.loc[mask, 'Task_Completed'].iloc[0]
 
-        if dataframe.loc[mask, 'Task_Completed'].iloc[0] == True:
+        # Kontrollera den nya statusen
+        new_status = dataframe.loc[mask, 'Task_Completed'].iloc[0]
+
+        if new_status:
             log_action("complete_task", f"{st.session_state.username} avslutade uppgiften: {task_name}", "Planering/Översikt")
-        elif dataframe.loc[mask, 'Task_Completed'].iloc[0] == False:
-            log_action("complete_task", f"{st.session_state.username} återupprättade uppgiften: {task_name}", "Planering/Översikt")
         else:
-            log_action("complete_task", f"Vet inte om {task_name} är klar eller ej\n kolla med {st.session_state.username}", "Planering/Översikt")
+            log_action("complete_task", f"{st.session_state.username} återupprättade uppgiften: {task_name}", "Planering/Översikt")
 
     return dataframe
 
