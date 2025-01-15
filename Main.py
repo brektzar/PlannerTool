@@ -645,7 +645,9 @@ def main_app():
                                                 goal['Goal_Name'],
                                                 task['Task_Name']
                                             )
+                                            st.write(f"Uppgift avslutad: {task_completed}")
                                             save_data(st.session_state.df)
+                                            st.rerun()
 
                                 else:
                                     st.session_state.open_items.discard(
