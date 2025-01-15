@@ -359,13 +359,9 @@ def bug_tracking_tab():
                     value=current_status == 'Fixad',
                     key=f"bug_{idx}"
                 )
-                print("Showing existing bugs!")
-                os.write(1,b'Showing existing bugs!\n')
                 
                 if new_status != (current_status == 'Fixad'):
                     bugs_df.at[idx, 'status'] = 'Fixad' if new_status else 'Ej Fixad'
-                    print("Should try to log this now")
-                    os.write(1,b'Should try to log this now\n')
                     if bug['status'] == 'Fixad':
                         log_action("Bug åter ej fixad!", f"Buggen '{bug['bug_title']}' ändrades av {st.session_state.username}", location)
                     else:

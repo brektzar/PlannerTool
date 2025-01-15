@@ -62,7 +62,9 @@ def login(username, password):
         st.session_state.authenticated = True
         st.session_state.user_role = user['role']
         st.session_state.username = username
+        log_action("Login", f"{st.session_state.username} loggade in", "Login Screen")
         return True
+    log_action("Login", f"Misslyckat loginförsök av {user}", "Login Screen")
     return False
 
 
