@@ -13,7 +13,7 @@ def current_time():
 
     formatted_time = stockholm_time.strftime("Datum: %Y-%m-%d Tid: %H:%M:%S")
     
-    return formatted_time  # Return as a datetime object
+    return formatted_time
 
 def year_one_month_ago():
     # Hämta den aktuella tiden för Stockholm (som beaktar sommartid)

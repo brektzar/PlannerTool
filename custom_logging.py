@@ -121,10 +121,18 @@ def get_logs_by_action():
         for group in logs_collection.aggregate(pipeline):
             logs_by_action[group["_id"]] = group["logs"]
             os.write(1, group.encode())
+
+        st.write(f"Totalt {len(logs_by_action)} actions grupperades.")
         
         success = f"Hämtar loggar!"
         os.write(1, success.encode())
         
+        for action, logs in logs_by_action.items():
+            st.write(f"Action: {action} - Antal loggar: {len(logs)}")
+            if logs:
+                st.write(logs)  # Visar loggarna för varje action
+            else:
+                st.write(f"Inga loggar hittades för {action}.")
 
         return logs_by_action
 
