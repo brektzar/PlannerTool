@@ -4,25 +4,16 @@ import pytz
 
 
 
-#def current_time():
-    # Hämta den aktuella tiden för Stockholm (som beaktar sommartid)
-    #timezone = pytz.timezone('Europe/Stockholm')
-    
-    # Hämta aktuell tid med rätt tidszon
-    #stockholm_time = datetime.now(timezone)
-    #stockholm_time_iso = stockholm_time.isoformat()
-    # Konvertera till ISO 8601-format som MongoDB kan hantera
-    
-    #return stockholm_time_iso
-
 def current_time():
     # Hämta den aktuella tiden för Stockholm (som beaktar sommartid)
     timezone = pytz.timezone('Europe/Stockholm')
     
     # Hämta aktuell tid med rätt tidszon
     stockholm_time = datetime.now(timezone)
-    
-    return stockholm_time  # Return as a datetime object
+ 
+    # Konvertera till ISO 8601-format som MongoDB kan hantera
+    return stockholm_time.isoformat()
+
 
 # DataFrame structure
 def create_empty_dataframe():
