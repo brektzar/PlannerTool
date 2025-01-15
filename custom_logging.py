@@ -94,6 +94,69 @@ def load_logs():
         print(f"Error loading logs from MongoDB: {e}")
         return pd.DataFrame(columns=['action', 'description', 'location', 'timestamp'])
 
+def get_logs_by_action():
+    """
+    Använder aggregation pipeline för att gruppera loggar efter action.
+    Returnerar en ordbok där nycklarna är actions och värdena är listor av loggar.
+    """
+    actions = [
+        "add_goal", "add_task", "add_risk", "add_tool",
+        "remove_tool", "complete_task", "complete_goal",
+        "bug_report", "bug_fixed", "bug_unfixed", "save_history"
+    ]
+
+    try:
+        db = get_database()
+        logs_collection = db.logs
+
+        # Aggregation pipeline för att gruppera loggar
+        pipeline = [
+            {"$match": {"action": {"$in": actions}}},
+            {"$group": {"_id": "$action", "logs": {"$push": "$$ROOT"}}}
+        ]
+        
+        # Kör aggregation och skapa en ordbok
+        logs_by_action = {}
+        for group in logs_collection.aggregate(pipeline):
+            logs_by_action[group["_id"]] = group["logs"]
+
+        return logs_by_action
+
+    except Exception as e:
+        print(f"Error fetching logs by action with aggregation: {e}")
+        return {}
+
+
+    """ 
+    def get_logs_by_action(): """
+    """
+    Skapar separata listor för varje unik action i loggsamlingen.
+    Returnerar en ordbok där nycklarna är actions och värdena är listor av loggar.
+    """
+    """     
+        actions = [
+        "add_goal", "add_task", "add_risk", "add_tool",
+        "remove_tool", "complete_task", "complete_goal",
+        "bug_report", "bug_fixed", "bug_unfixed", "save_history"
+    ] """
+
+    try:
+        from database import get_database
+        db = get_database()
+        logs_collection = db.logs
+
+        # Ordbok för att lagra loggar per action
+        logs_by_action = {action: [] for action in actions}
+
+        # Hämta loggar för varje action
+        for action in actions:
+            logs_by_action[action] = list(logs_collection.find({"action": action}))
+
+        return logs_by_action
+
+    except Exception as e:
+        print(f"Error fetching logs by action: {e}")
+        return {}
 
 def compare_and_log_changes(df, edited_data):
     changes_made = []

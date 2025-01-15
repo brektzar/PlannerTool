@@ -4,11 +4,11 @@ from io import BytesIO
 import openpyxl
 from openpyxl.styles import PatternFill, Border, Side
 from datetime import datetime
-from Data import current_time
 import pytz
 import plotly.graph_objects as go
-from Data import save_risk_data, load_risk_data
+from Data import save_risk_data, load_risk_data, current_time
 from database import get_database
+from logging import log_action
 
 
 # """
@@ -449,6 +449,7 @@ def risk_assessment_app(df):
                 st.session_state.risks.append(new_risk)
                 if save_risk_data(st.session_state.risks):
                     st.success("Risk sparad i databasen!")
+                    log_action("add_risk", f"{st.session_state.username} la till ny risk, {risk_name} \nför {selected_task}", "Planering/Riskbedömning")
                 else:
                     st.error("Fel vid sparande av risk")
             else:

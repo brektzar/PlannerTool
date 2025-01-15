@@ -133,9 +133,10 @@ def clear_all_collections():
     """Clear all collections in the database"""
     try:
         db = get_database()
-        collections = ["goals", "technical_needs", "bugs", "history", "risks"]  # Add risks
+        collections = ["goals", 'tasks', "technical_needs", "bugs", "history", "risks"]  # Add risks
         for collection in collections:
             db[collection].delete_many({})
+            log_action("clear_all_data", f"{st.session_state.username} Rensade all samlad data!", "Admin Panel")
         return True
     except Exception as e:
         print(f"Error clearing collections: {str(e)}")
@@ -145,24 +146,5 @@ def clear_specific_collection(collection_name):
     """Clear a specific collection in the database"""
     db = get_database()
     result = db[collection_name].delete_many({})
+    log_action("clear_specific_data", f"{st.session_state.username} Rensade all data relaterat till{collection_name}!", "Admin Panel")
     return result.deleted_count
-
-def clear_all_data(db):
-    """Clear all collections in the database"""
-    try:
-        collections = ['goals', 'tasks', 'bugs', 'technical_needs']
-        for collection in collections:
-            db[collection].delete_many({})
-        return True, "All data cleared successfully"
-    except Exception as e:
-        return False, f"Error clearing data: {str(e)}"
-
-def clear_collection(db, collection_name):
-    """Clear a specific collection in the database"""
-    try:
-        if collection_name not in db.list_collection_names():
-            return False, f"Collection '{collection_name}' not found"
-        db[collection_name].delete_many({})
-        return True, f"Collection '{collection_name}' cleared successfully"
-    except Exception as e:
-        return False, f"Error clearing collection: {str(e)}" 

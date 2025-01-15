@@ -3,6 +3,7 @@ from database import get_database, clear_all_collections, clear_specific_collect
 import pandas as pd
 from Data import save_data
 from auth import require_auth, create_user, init_auth
+from custom_logging import log_action, get_logs_by_action
 
 def validate_csv_data(df, collection_type):
     """Validate uploaded CSV data based on collection type"""
@@ -72,7 +73,9 @@ def import_csv_to_mongodb(df, collection_name):
                 # For other collections, just insert (you can add specific logic for other collections)
                 db[collection_name].insert_one(record)
                 added_count += 1
-        
+        log_action("import_data", (f"{st.session_state.username} Importerade data," 
+                                    f"{added_count} poster lades till men hoppade över {skipped_count} poster som var dubbletter"), 
+                                    "Admin Panel/Import/Export")
         return True, f"Import complete: Added {added_count} records, Skipped {skipped_count} duplicates"
     except Exception as e:
         return False, f"Error importing data: {str(e)}"
@@ -84,7 +87,7 @@ def admin_panel():
     st.title("Admin Panel")
     
     # Create tabs for different admin functions
-    tab1, tab2, tab3, tab4 = st.tabs(["Clear Data", "Import/Export", "Database Stats", "User Management"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Clear Data", "Import/Export", "Database Stats", "User Management", "Loggar"])
     
     with tab1:
         st.header("Clear Data")
@@ -224,3 +227,25 @@ def admin_panel():
             st.dataframe(user_df)
         else:
             st.info("No users found") 
+
+    with tab5:
+        st.title("Loggar per Action")
+
+        # Hämta loggar
+        logs_by_action = get_logs_by_action()
+
+        # Skapa flikar för varje action
+        if logs_by_action:
+            tab_labels = list(logs_by_action.keys())
+            tabs = st.tabs(tab_labels)
+
+            for tab, action in zip(tabs, tab_labels):
+                with tab:
+                    st.header(f"Loggar för {action}")
+                    logs = logs_by_action[action]
+
+                    if logs:
+                        # Visa loggarna som en tabell
+                        st.dataframe(logs)
+                    else:
+                        st.write("Inga loggar hittades för denna action.")

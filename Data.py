@@ -15,6 +15,17 @@ def current_time():
     
     return formatted_time  # Return as a datetime object
 
+def year_one_month_ago():
+    # Hämta den aktuella tiden för Stockholm (som beaktar sommartid)
+    timezone = pytz.timezone('Europe/Stockholm')
+    stockholm_time = datetime.now(timezone)
+    
+    # Subtrahera en månad
+    one_month_ago = stockholm_time - relativedelta(months=1)
+    
+    # Returnera året
+    return one_month_ago.year
+
 
 # DataFrame structure
 def create_empty_dataframe():

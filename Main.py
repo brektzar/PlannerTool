@@ -705,6 +705,7 @@ def main_app():
                                     tech_needs.sort(key=lambda x: x.split(" - ")[0])
                                     save_technical_needs(tech_needs)
                                     st.success(f"Redskap '{full_need}' tillagt!")
+                                    log_action("add_tool", f"{st.session_state.username} la till nytt redskap, {full_need}", "Planering/Hantera Tekniska Behov")
                                     st.rerun()
                                 else:
                                     st.error("Detta redskap finns redan!")
@@ -722,6 +723,7 @@ def main_app():
                                         tech_needs.remove(need)
                                         save_technical_needs(tech_needs)
                                         st.success(f"Behov '{need}' borttaget!")
+                                        log_action("remove_tool", f"{st.session_state.username} tog bort redskap, {need}", "Planering/Hantera Tekniska Behov")
                                         st.rerun()
 
         with main_tab2:  # Analys Tab

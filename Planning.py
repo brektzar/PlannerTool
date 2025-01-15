@@ -342,7 +342,7 @@ def bug_tracking_tab():
                 })
 
                 bugs_df = pd.concat([bugs_df, new_bug], ignore_index=True)
-                log_action("Bug Rapporterad", f"Buggen '{bug_title}' rapporterades av {st.session_state.username}", location)
+                log_action("bug_report", f"Buggen '{bug_title}' rapporterades av {st.session_state.username}", location)
                 save_bugs(bugs_df)
                 
                 st.success("Bug rapporterad!")
@@ -380,9 +380,9 @@ def bug_tracking_tab():
                 if new_status != (current_status == 'Fixad'):
                     bugs_df.at[idx, 'status'] = 'Fixad' if new_status else 'Ej Fixad'
                     if bug['status'] == 'Fixad':
-                        log_action("Bug åter ej fixad!", f"Buggen '{bug['bug_title']}' ändrades av {st.session_state.username}", location)
+                        log_action("bug_unfixed", f"Buggen '{bug['bug_title']}' ändrades av {st.session_state.username}", location)
                     else:
-                        log_action("Bug Fixad", f"Buggen '{bug['bug_title']}' fixades av {st.session_state.username}", location)
+                        log_action("bug_fixed", f"Buggen '{bug['bug_title']}' fixades av {st.session_state.username}", location)
                     save_bugs(bugs_df)
                     st.rerun()
     else:

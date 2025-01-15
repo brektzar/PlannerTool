@@ -3,7 +3,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from datetime import datetime
-from Data import current_time
+from Data import current_time, year_one_month_ago
+from custom_logging import log_action
 import pytz
 from database import get_database
 
@@ -45,6 +46,7 @@ def save_year_to_history(current_data):
         # Insert new records
         if records:
             db.history.insert_many(records)
+        log_action("save_history", f"Historiken för {year_one_month_ago()} sparades av {st.session_state.username}", "Analy/Historisk Data")
         return True
     except Exception as e:
         st.error(f"Error saving to history: {str(e)}")
