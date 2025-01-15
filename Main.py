@@ -294,7 +294,7 @@ def main_app():
                                                                 goal_description, goal_dates)
                         if success:
                             save_data(st.session_state.df)
-                            st.balloons()
+                            log_action("add_goal", f"{st.session_state.username} lade till ett nytt mål, {goal_name}", "Planering/Lägg till Mål")
                             st.success("🎉 Mål tillagt!")
 
             with planning_tab2:
@@ -386,6 +386,7 @@ def main_app():
                                                                     task_data)
                             if success:
                                 save_data(st.session_state.df)  # Save after adding task
+                                log_action("add_task", f"{st.session_state.username} lade till en ny uppgift, {task_name}", "Planering/Lägg till uppgift")
                                 st.success("Uppgift tillagd!")
                 else:
                     st.warning("Lägg till ett mål först innan du skapar uppgifter.")
@@ -422,6 +423,19 @@ def main_app():
                             st.session_state.df = update_dataframe(st.session_state.df, st.session_state.edited_data)
                             save_data(st.session_state.df)  # Save to file
                             
+                            # Logga varje ändring
+                            for index, changes in st.session_state.edited_data.items():
+                                old_data = changes.get("old_data")
+                                new_data = changes.get("new_data")
+                                field_name = changes.get("field_name")  # Exempelvis "goal_name", "task_name" etc.
+                                
+                                # Logga varje ändring
+                                log_action(
+                                    "edit_data", 
+                                    f"{st.session_state.username} ändrade {field_name} från '{old_data}' till '{new_data}'",
+                                    "Planering/Redigera Mål och Uppgifter"
+                                )
+
                             # Clear the edited data and reset states
                             st.session_state.edited_data = {}
                             st.session_state.open_items = set()

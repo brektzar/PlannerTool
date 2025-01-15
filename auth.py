@@ -73,6 +73,7 @@ def logout():
     st.session_state.authenticated = False
     st.session_state.user_role = None
     if 'username' in st.session_state:
+        log_action("Logout", f"{st.session_state.username} loggade ut", " ")
         del st.session_state.username
 
 
