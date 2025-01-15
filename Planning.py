@@ -222,7 +222,16 @@ def toggle_task_completion(dataframe, goal_name, task_name):
     """
     mask = (dataframe['Type'] == 'Task') & (dataframe['Goal_Name'] == goal_name) & (dataframe['Task_Name'] == task_name)
     if mask.any():
+        
         dataframe.loc[mask, 'Task_Completed'] = ~dataframe.loc[mask, 'Task_Completed'].iloc[0]
+
+        if dataframe.loc[mask, 'Task_Completed'] == True:
+            log_action("complete_task", f"{st.session_state.username} avslutade uppgiften: {task_name}", "Planering/Översikt")
+        elif dataframe.loc[mask, 'Task_Completed'] != True:
+            log_action("complete_task", f"{st.session_state.username} återupprättade uppgiften: {task_name}", "Planering/Översikt")
+        else:
+            log_action("complete_task", f"Vet inte om {task_name} är klar eller ej\n kolla med {st.session_state.username}", "Planering/Översikt")
+
     return dataframe
 
 
@@ -243,6 +252,7 @@ def toggle_goal_completion(dataframe, goal_name):
     if mask.any():
         # Set goal completion status based on tasks
         dataframe.loc[mask, 'Goal_Completed'] = all_tasks_completed
+        log_action("complete_goal", f"{st.session_state.username} avslutade målet: {goal_name}", "Planering/Översikt")
         return dataframe, True, "Goal completion status updated"
 
     return dataframe, False, "Goal not found"
